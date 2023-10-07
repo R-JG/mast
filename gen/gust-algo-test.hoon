@@ -2,54 +2,19 @@
 |=  *
 :-  %noun
 =<
-(algo2 [%manx doc1] [%manx doc2])
+  %+  turn
+    (algo2 [%manx doc1] [%manx doc2]) 
+  en-xml:html
 |%
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  doc1
   ;body
-    ;h1: Welcome!
-    ;p
-      ; Hello, world!
-      ; Welcome to my page.
-      ;div(style "color:red")
-        ; Red div!
-        ;div(style "color:green")
-          ; Green div!
-          ;div(style "color:blue")
-            ; Blue div!
-          ==
-        ==
-      ==
-      ; Here is an image:
-      ;br;
-      ;img@"/foopa.png";
-    ==
-    ;h2: Chungus!
-    ;div: beebooba
-    ;div(data "test");
+    ;div;
   ==
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  doc2
   ;body
-    ;h1: Welcome!
-    ;p
-      ; Hello, world!
-      ; Welcome to my page.
-      ;div(style "color:red")
-        ; Red div!
-        ;div(style "color:green")
-          ; Green div!
-          ;div(style "color:blue")
-            ; Blue div!
-            ; Nested Change!
-          ==
-        ==
-      ==
-      ; Here is an image:
-      ;br;
-      ;img@"/foo.png";
-    ==
-    ;div.newdiv;
+    ;div;
   ==
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 :: ++  package
@@ -114,32 +79,33 @@
   =/  accumulator=marl  ~
   |-  ^-  marl
   ?>  =(-.old -.new)
-  ?:  =(-.new %marl)
-    ?:  ?&(=(~ +.old) =(~ +.new))
-      accumulator
-    ?:  ?&(=(~ +.old) .?(+.new))
-      :_  accumulator  
-        %-  manx  
-        ;div#new-child-node-collection
-          ;*  +.new
-        ==
-    ?:  ?&(.?(+.old) =(~ +.new))
-      [;/("delete") accumulator]
-    :: both old and new are marl, and neither old nor new are null:
-    :: recurse into the child node, and nest recursion the other direction continuing through the list:
-    %=  $ 
-      old  [%manx (manx +2.+.old)]
-      new  [%manx (manx +2.+.new)]
-      accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
+  ?:  =(-.new %manx)
+    :: both old and new are manx:
+    ?.  =(+2.+.old +2.+.new)
+      :: if the tags are not equal, add new to the accumulator:
+      [(manx +.new) accumulator]
+    :: else recurse into the child list
+    %=  $
+      old  [%marl +3.+.old]
+      new  [%marl +3.+.new]
     ==
-  :: both old and new are manx:
-  ?.  =(+2.+.old +2.+.new)
-    :: if the tags are not equal, add new to the accumulator:
-    [(manx +.new) accumulator]
-  :: else recurse into the child list
-  %=  $
-    old  [%marl +3.+.old]
-    new  [%marl +3.+.new]
+  :: both old and new are marl:
+  ?:  ?&(=(~ +.old) =(~ +.new))
+    accumulator
+  ?:  ?&(=(~ +.old) .?(+.new))
+    :_  accumulator  
+      %-  manx  
+      ;div#new-child-node-collection
+        ;*  +.new
+      ==
+  ?:  ?&(.?(+.old) =(~ +.new))
+    [;/("delete") accumulator]
+  :: both old and new are marl, and neither old nor new are null:
+  :: recurse into the child node, and nest recursively in the other direction continuing through the list:
+  %=  $ 
+    old  [%manx (manx +2.+.old)]
+    new  [%manx (manx +2.+.new)]
+    accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
   ==
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 --
