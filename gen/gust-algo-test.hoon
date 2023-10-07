@@ -2,7 +2,7 @@
 |=  *
 :-  %noun
 =<
-(algo2 doc1 doc2)
+(algo2 [%manx doc1] [%manx doc2])
 |%
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  doc1
@@ -26,7 +26,7 @@
     ==
     ;h2: Chungus!
     ;div: beebooba
-    ;div(data "delete this mf div");
+    ;div(data "test");
   ==
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  doc2
@@ -41,7 +41,7 @@
           ; Green div!
           ;div(style "color:blue")
             ; Blue div!
-            ; Sike!
+            ; Nested Change!
           ==
         ==
       ==
@@ -106,52 +106,57 @@
   :: recurse through the child list
   $(c.old +3.c.old, c.new +3.c.new)
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
++$  algo-sample
+  $%([%manx manx] [%marl marl])
+
 ++  algo2
-  |=  [old=?(manx marl) new=?(manx marl)]
-  :: note: the type is changed from a type union of manx marl and tas, to just marl, in order to resolve recursive type issues:
+  |=  [old=algo-sample new=algo-sample]
   =/  accumulator=marl  ~
-  ^-  marl
-  |-  
-  :: check whether on marl, and whether the current values are null.
-  ?:  ?&(=(~ old) =(~ new))
+  |-  ^-  marl
+  ?:  ?&(=(~ +.old) =(~ +.new))
     accumulator
-  ?:  ?&(=(~ old) .?(new))
-    :: note: this is a complicated section, meant for handling a recursive path where old is null and new is either manx or marl.
-    :: if marl cannot be a type in the accumulator list, then the product could be a placeholder manx serving as a tag to hold the childlist with all of the new nodes to add:
-    :: :_  accumulator  
-    ::   ;div
-    ::     new
-    ::   ==
-    :: otherwise, the pattern here will be to recurse through the rest of the list without changing the old child list, keeping it at null. This has the effect of collecting all of the new manx as manx in the accumulator.
-    :: note: this adds the case where old is null and new is manx, so it must be handled.
-    ?:  ?=(@tas -.-.new)
-      :: if old is null and new is cell, then if new is manx, add new to the accumulator.
-      [new accumulator]
-    :: else, old is null and new is a list, so recurse into i with new, and without changing old
-    $(new i.new, accumulator $(new t.new))
-    ::
-  ?:  ?&(.?(old) =(~ new))
-    :: note: the delete tag is formatted as manx to fit into the marl accumulator. 
-    :: also, I need to add the locaction data to the delete tag.
-    [;/("delete") accumulator]
+  ?>  =(-.old -.new)
+  ?:  =(-.new %marl)
+    ?:  ?&(=(~ +.old) .?(+.new))
+      :_  accumulator  
+        ;div
+          new
+        ==
+
+  :: this is for handling the child list by recursing through it instead of adding it under a manx placeholder:
+  ::  ?:  ?&(=(~ old) .?(new))
+  ::    :: note: this is a complicated section, meant for handling a recursive path where old is null and new is either manx or marl.
+  ::    :: if marl cannot be a type in the accumulator list, then the product could be a placeholder manx serving as a tag to hold the childlist with all of the new nodes to add:
+  ::    :: :_  accumulator  
+  ::    ::   ;div
+  ::    ::     new (this doesn't directly work, but something similar should)
+  ::    ::   ==
+  ::    :: otherwise, the pattern here will be to recurse through the rest of the list without changing the old child list, keeping it at null. This has the effect of collecting all of the new manx as manx in the accumulator.
+  ::    :: note: this adds the case where old is null and new is manx, so it must be handled.
+  ::    ?:  ?=(@tas -.-.new)
+  ::      :: if old is null and new is cell, then if new is manx, add new to the accumulator.
+  ::      [new accumulator]
+  ::    :: else, old is null and new is a list, so recurse into i with new, and without changing old
+  ::    $(new i.new, accumulator $(new t.new))
   
-  :: if neither old nor new are null, ensure that they are both only either manx or marl; this should never happen in the algorithm.
-  ?.  ?|(?&(?=(@tas -.-.old) ?!(?=(@tas -.-.new))) ?&(?=(@tas -.-.new) ?!(?=(@tas -.-.old))))
-    accumulator
-  ?:  ?|(?=(@tas -.-.old) ?=(@tas -.-.new))
-    :: on marl, where neither old nor new are null:
-    $(old i.old, new i.new, accumulator $(old t.old, new t.new))
+    ?:  ?&(.?(+.old) =(~ +.new))
+      :: note: the delete tag is formatted as manx to fit into the marl accumulator. 
+      :: also, I need to add the locaction data to the delete tag.
+      [;/("delete") accumulator]
+  
+  :: on marl, where neither old nor new are null:
+  :: recurse into the child node, and nest recursion the other direction continuing through the list:
+  $(old [%manx (manx +2.+.old)], new [%manx (manx +2.+.new)], accumulator $(old [%marl +3.+.old], new [%marl +3.+.new]))
+
+
+  :: at this point it should be determined that both old and new are manx.  
   :: on manx, determine whether to recurse into the child list:
-  ?.  =(g.old g.new)
-    [g.new accumulator]
-  :: I think these null checks are now redundant after adding the necessary current value null checks...
-  :: ?:  ?&(=(~ c.old) =(~ c.new))
-  ::   accumulator
-  :: ?:  ?&(=(~ c.old) .?(c.new))
-  ::   [c.new accumulator]
-  :: ?:  ?&(.?(c.old) =(~ c.new))
-  ::   [%delete accumulator]
-  :: recurse into the head of the child list, and nest recursion the other direction into the tail:
-  $(old i.c.old, new i.c.new, accumulator $(old t.c.old, new t.c.new))
+  ?.  =(+2.+.old +2.+.new)
+    [(manx +.new) accumulator]
+  :: OLD - recurse into the head of the child list, and nest recursion the other direction into the tail:
+  :: $(old i.c.old, new i.c.new, accumulator $(old t.c.old, new t.c.new))
+
+  :: recurse into the child list
+  $(old [%marl +3.+.old], new [%marl +3.+.new])
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 --
