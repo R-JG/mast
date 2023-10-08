@@ -2,39 +2,27 @@
 |=  *
 :-  %noun
 =<
-  %+  turn
-    (algo2 [%manx doc1] [%manx doc2]) 
-  en-xml:html
+%-  crip
+%-  en-xml:html
+  ;output
+    ;*  (algo2 [%manx doc1] [%manx doc2])
+  ==
 |%
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  doc1
   ;body
+    ;a;
     ;div;
+    ;p;
   ==
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  doc2
   ;body
+    ;a
+      ;h1: Hello World
+    ==
     ;div;
   ==
-:: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
-:: ++  package
-::   |=  base=*
-::   =/  accumulator=?(^ ~)  ~
-::   |-  
-::   ?@  base
-::     :-  base  accumulator
-::   ?:  ?=(@tas -.-.base)
-::     :-  base  accumulator
-::   $(base -.base, accumulator $(base +.base))
-
-  :: essential form of binary tree sweep to list:
-  :: |=  a=*
-  :: =/  lis=(list @)  ~
-  :: |-  ^-  (list @)
-  :: ?@  a
-  ::   [i=a t=lis]
-  :: $(lis $(a +.a), a -.a)
-
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  algo
   |=  [old=manx new=manx]
@@ -95,11 +83,13 @@
   ?:  ?&(=(~ +.old) .?(+.new))
     :_  accumulator  
       %-  manx  
-      ;div#new-child-node-collection
+      ;output#new-node-group
         ;*  +.new
       ==
   ?:  ?&(.?(+.old) =(~ +.new))
-    [;/("delete") accumulator]
+    :_  accumulator
+      %-  manx  
+      ;output#nodes-to-delete;
   :: both old and new are marl, and neither old nor new are null:
   :: recurse into the child node, and nest recursively in the other direction continuing through the list:
   %=  $ 
