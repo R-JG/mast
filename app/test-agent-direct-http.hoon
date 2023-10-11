@@ -1,12 +1,6 @@
 /-  mast
 /+  default-agent, dbug, agentio, server
 |%
-:: +$  click-one  [%event %click %red]
-:: +$  click-two  [%event %click %blue]
-:: +$  fe-event
-::   $%  click-one
-::       click-two
-::   ==
 :: +$  app-state  [color-one=@t color-two=@t]
 :: +$  display-state  manx
 +$  state-0  [%0 ~]
@@ -58,7 +52,16 @@
       %'GET'
         [(make-200 eyreid [~ (manx-to-octs:server sail-index)]) state]
       %'POST'
-        [(make-200 eyreid ~) state]
+        =/  jsonunit  (de:json:html +.+.body.request.req)
+        =/  parsedjson  
+          %-  (ot ~[tags+so data+(ar (at ~[so so]))]):dejs:format
+        +.jsonunit
+        ?+  ^-(@tas -.parsedjson)  [(make-405 eyreid) state]
+          %click-square-one
+            [(make-200 eyreid [~ (manx-to-octs:server ^-(manx ;div.square-one;))]) state]
+          %click-square-two
+            [(make-200 eyreid [~ (manx-to-octs:server ^-(manx ;div.square-two;))]) state]
+        ==
     ==
   ::
   ++  make-200
@@ -112,18 +115,23 @@
         ;style
           ;+  ;/  style
         ==
+        ;script
+          ;+  ;/  script
+        ==
       ==
       ;body
         ;+  sail-component
-        Test
       ==
-      ;scrpt;
     ==
   ::
   ++  sail-component
     ^-  manx
-    ;main.nested-component
-      Nested Component Test
+    ;main
+      Click The Squares
+      ;div.square-container
+        ;div.square(data-event "click-square-one");
+        ;div.square(data-event "click-square-two");
+      ==
     ==
   ::
   ++  style
@@ -134,11 +142,56 @@
       width: 100vw;
       height: 100vh;
       margin: 0;
+    }
+    main {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .square-container {
+      display: flex;
+      flex-direction: row;
+    }
+    .square {
+      height: 10rem;
+      width: 10rem;
+      margin: 3rem;
+      border-radius: 0.5rem;
       background-color: blue;
     }
-    .nested-component {
-      color: yellow;
-    }
+    '''
+  ::
+  ++  script
+    ^~
+    %-  trip
+    '''
+    addEventListener('DOMContentLoaded', () => {
+        let eventElements = document.querySelectorAll('[data-event]');
+        eventElements.forEach(el => {
+            if (el.dataset.event.startsWith('click')) {
+                el.addEventListener('click',() => urbitClick(el.dataset.event));
+            };
+        });
+    });
+
+    async function urbitClick(tagString) {
+        try {
+            const response = await fetch(window.location.href, {
+                method: 'POST',
+                body: JSON.stringify({
+                    tags: tagString,
+                    data: []
+                })
+            });
+            const htmlData = await response.text();
+            console.log(htmlData);
+        } catch (error) {
+            console.error(error);
+        };
+    };
     '''
   --
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
