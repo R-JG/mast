@@ -1,9 +1,9 @@
 /-  mast
 /+  default-agent, dbug, agentio, server
 |%
-:: +$  app-state  [color-one=@t color-two=@t]
-:: +$  display-state  manx
-+$  state-0  [%0 ~]
++$  app  [color-one=tape color-two=tape]
++$  display  manx
++$  state-0  [%0 [=app =display]]
 +$  versioned-state  $%(state-0)
 +$  card  card:agent:gall
 --
@@ -50,17 +50,26 @@
       [(make-307 eyreid) state]
     ?+  method.request.req  [(make-405 eyreid) state]
       %'GET'
-        [(make-200 eyreid [~ (manx-to-octs:server sail-index)]) state]
+        :-  (make-200 eyreid [~ (manx-to-octs:server sail-index)]) 
+          state(display sail-component)
       %'POST'
+        :: parsing the request
         =/  jsonunit  (de:json:html +.+.body.request.req)
-        =/  parsedjson  
+        =/  parsedjson  ^-  [tags=@tas data=(list [@t @t])]  
           %-  (ot ~[tags+so data+(ar (at ~[so so]))]):dejs:format
         +.jsonunit
-        ?+  ^-(@tas -.parsedjson)  [(make-405 eyreid) state]
+        :: handling the events
+        ?+  tags.parsedjson  [(make-400 eyreid) state]
           %click-square-one
-            [(make-200 eyreid [~ (manx-to-octs:server ^-(manx ;div.square-one;))]) state]
+            =/  newstate  state(color-one.app "blue")
+            =^  package  newstate
+              (gust newstate)
+            [(make-200 eyreid [~ package]) newstate]
           %click-square-two
-            [(make-200 eyreid [~ (manx-to-octs:server ^-(manx ;div.square-two;))]) state]
+            =/  newstate  state(color-two.app "red")
+            =^  package  newstate
+              (gust newstate)
+            [(make-200 eyreid [~ package]) newstate]
         ==
     ==
   ::
@@ -83,6 +92,13 @@
     %+  give-simple-payload:app:server 
       eyreid 
     ^-(simple-payload:http [reshead ~])
+  ::
+  ++  make-400
+    |=  eyreid=@ta
+    ^-  (list card)
+    %+  give-simple-payload:app:server
+      eyreid 
+    ^-(simple-payload:http [[400 ~] ~])
   ::
   ++  make-405
     |=  eyreid=@ta
@@ -129,8 +145,16 @@
     ;main
       Click The Squares
       ;div.square-container
-        ;div.square(data-event "click-square-one");
-        ;div.square(data-event "click-square-two");
+        ;div.square
+          =data-event  "click-square-one"
+          =class  color-one.app.state
+          ;div;
+        ==
+        ;div.square
+          =data-event  "click-square-two"
+          =class  color-two.app.state
+          ;div;
+        ==
       ==
     ==
   ::
@@ -160,6 +184,12 @@
       width: 10rem;
       margin: 3rem;
       border-radius: 0.5rem;
+      background-color: black;
+    }
+    .red {
+      background-color: red;
+    }
+    .blue {
       background-color: blue;
     }
     '''
@@ -193,6 +223,52 @@
         };
     };
     '''
+  :: :: :: ::
+  ::
+  :: Algorithm 
+  ::
+  :: :: :: ::
+  ++  gust-algo
+    |=  [old=$%([%manx manx] [%marl marl]) new=$%([%manx manx] [%marl marl])]
+    =/  accumulator=marl  ~
+    |-  ^-  marl
+    ?>  =(-.old -.new)
+    ?:  =(-.new %manx)
+      ?.  =(+2.+.old +2.+.new)
+        [(manx +.new) accumulator]
+      %=  $
+        old  [%marl +3.+.old]
+        new  [%marl +3.+.new]
+      ==
+    ?:  ?&(=(~ +.old) =(~ +.new))
+      accumulator
+    ?:  ?&(=(~ +.old) .?(+.new))
+      :_  accumulator  
+        %-  manx  
+        ;output#new-node-group
+          ;*  +.new
+        ==
+    ?:  ?&(.?(+.old) =(~ +.new))
+      :_  accumulator
+        %-  manx  
+        ;output#nodes-to-delete;
+    %=  $ 
+      old  [%manx (manx +2.+.old)]
+      new  [%manx (manx +2.+.new)]
+      accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
+    ==
+  ::
+  ++  gust
+    |=  newstate=versioned-state
+    =/  newdisplay  sail-component(state newstate)
+    :_  newstate(display newdisplay)
+    %-  manx-to-octs:server
+    ^-  manx
+    ;output
+      ;*  %+  gust-algo 
+        [%manx display.state] 
+      [%manx newdisplay]
+    ==
   --
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  on-watch
