@@ -61,15 +61,19 @@
         :: handling the events
         ?+  tags.parsedjson  [(make-400 eyreid) state]
           %click-square-one
-            =/  newstate  state(color-one.app "blue")
-            =^  package  newstate
+            =/  newcolor  ?:(=(color-one.app.state "blue") "green" "blue")
+            :: implementing gust:
+            =/  newstate  state(color-one.app newcolor)
+            =^  output  newstate
               (gust newstate)
-            [(make-200 eyreid [~ package]) newstate]
+            [(make-200 eyreid [~ output]) newstate]
           %click-square-two
-            =/  newstate  state(color-two.app "red")
-            =^  package  newstate
+            =/  newcolor  ?:(=(color-two.app.state "red") "pink" "red")
+            :: implementing gust:
+            =/  newstate  state(color-two.app newcolor)
+            =^  output  newstate
               (gust newstate)
-            [(make-200 eyreid [~ package]) newstate]
+            [(make-200 eyreid [~ output]) newstate]
         ==
     ==
   ::
@@ -119,10 +123,6 @@
   ::
   :: :: :: ::
   ++  sail-index
-    :: ^-  octs
-    :: %-  as-octs:mimes:html
-    :: %-  crip
-    :: %-  en-xml:html
     ^-  manx
     ;html
       ;head
@@ -143,17 +143,21 @@
   ++  sail-component
     ^-  manx
     ;main
+      =id  "one"
       Click The Squares
       ;div.square-container
-        ;div.square
+        =id  "two"
+        ;div
+          =id  "three"
+          =class  (weld "square " color-one.app.state)
           =data-event  "click-square-one"
-          =class  color-one.app.state
-          ;div;
+          ;+  ;/  color-one.app.state
         ==
-        ;div.square
+        ;div
+          =id  "four"
+          =class  (weld "square " color-two.app.state)
           =data-event  "click-square-two"
-          =class  color-two.app.state
-          ;div;
+          ;+  ;/  color-two.app.state
         ==
       ==
     ==
@@ -184,13 +188,24 @@
       width: 10rem;
       margin: 3rem;
       border-radius: 0.5rem;
+      color: white;
       background-color: black;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
     .red {
       background-color: red;
     }
     .blue {
       background-color: blue;
+    }
+    .pink {
+      background-color: pink;
+    }
+    .green {
+      background-color: green;
     }
     '''
   ::
@@ -200,12 +215,14 @@
     '''
     addEventListener('DOMContentLoaded', () => {
         let eventElements = document.querySelectorAll('[data-event]');
-        eventElements.forEach(el => {
-            if (el.dataset.event.startsWith('click')) {
-                el.addEventListener('click',() => urbitClick(el.dataset.event));
-            };
-        });
+        eventElements.forEach(el => setEventListeners(el));
     });
+
+    function setEventListeners(el) {
+        if (el.dataset.event.startsWith('click')) {
+            el.addEventListener('click',() => urbitClick(el.dataset.event));
+        };
+    };
 
     async function urbitClick(tagString) {
         try {
@@ -217,7 +234,24 @@
                 })
             });
             const htmlData = await response.text();
-            console.log(htmlData);
+            let template = document.createElement('template');
+            template.innerHTML = htmlData;
+            for (const child of template.content.firstElementChild.children) {
+                if (child.tagName === 'output') {
+                    if (child.id === 'mast-delete-nodes') {
+                        console.log('DELETE!');
+                    };
+                    if (child.id === 'mast-new-nodes') {
+        
+                    };
+                };
+                let existentNode = document.getElementById(child.id);
+                existentNode.replaceWith(child);
+                if (child.dataset.event) {
+                    let replacedNode = document.getElementById(child.id);
+                    setEventListeners(replacedNode);
+                };
+            };
         } catch (error) {
             console.error(error);
         };
@@ -245,13 +279,13 @@
     ?:  ?&(=(~ +.old) .?(+.new))
       :_  accumulator  
         %-  manx  
-        ;output#new-node-group
+        ;output#mast-new-nodes
           ;*  +.new
         ==
     ?:  ?&(.?(+.old) =(~ +.new))
       :_  accumulator
         %-  manx  
-        ;output#nodes-to-delete;
+        ;output#mast-delete-nodes;
     %=  $ 
       old  [%manx (manx +2.+.old)]
       new  [%manx (manx +2.+.new)]
