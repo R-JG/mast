@@ -163,8 +163,12 @@
           ;+  ;/  color-two.app.state
         ==
       ==
-      :: ;+  ?:(=(color-one.app.state "blue") ;div.circle(data-parentid "m", data-selfid "o"); ~)
-      :: ;+  ?:(=(color-two.app.state "red") ;div.circle(data-parentid "m", data-selfid "p"); ~)
+      ;+  ?:  =(color-one.app.state "blue") 
+        ;div.circle(data-parentid "m", data-selfid "o"); 
+      ;div(data-parentid "m", data-selfid "o");
+      ;+  ?:  =(color-two.app.state "red")
+        ;div.circle(data-parentid "m", data-selfid "p");
+      ;div(data-parentid "m", data-selfid "p");
     ==
   ::
   ++  style
@@ -229,13 +233,11 @@
         let eventElements = document.querySelectorAll('[data-event]');
         eventElements.forEach(el => setEventListeners(el));
     });
-
     function setEventListeners(el) {
         if (el.dataset.event.startsWith('click')) {
             el.addEventListener('click',() => urbitClick(el.dataset.event));
         };
     };
-
     async function urbitClick(tagString) {
         try {
             const response = await fetch(window.location.href, {
@@ -246,26 +248,28 @@
                 })
             });
             const htmlData = await response.text();
-            let template = document.createElement('template');
-            template.innerHTML = htmlData;
-            for (const templateChild of template.content.firstElementChild.children) {
-                if (templateChild.tagName === 'output') {
-                    if (templateChild.id === 'del') {
-                        
-                    };
-                    if (templateChild.id === 'new') {
-                        const parentid = templateChild.firstElementChild.dataset.parentid;
+            let container = document.createElement('template');
+            container.innerHTML = htmlData;
+            while (container.content.firstElementChild.children.length > 0) {
+                let outputChild = container.content.firstElementChild.firstElementChild;
+                if (outputChild.tagName === 'output') {
+                    if (outputChild.id === 'del') {
+
+                        outputChild.remove();
+                    } else if (outputChild.id === 'new') {
+                        const parentid = outputChild.firstElementChild.dataset.parentid;
                         let domParent = document.querySelector(`[data-selfid="${parentid}"]`);
-                        domParent.append(...templateChild.children);
+                        domParent.append(...outputChild.children);
+                        outputChild.remove();
                     };
-                };
-                const selfid = templateChild.dataset.selfid;
-                console.log("selfid: ", selfid);
-                let existentNode = document.querySelector(`[data-selfid="${selfid}"]`);
-                existentNode.replaceWith(templateChild);
-                if (templateChild.dataset.event) {
-                    let replacedNode = document.querySelector(`[data-selfid="${selfid}"]`);
-                    setEventListeners(replacedNode);
+                } else {
+                    const selfid = outputChild.dataset.selfid;
+                    let existentNode = document.querySelector(`[data-selfid="${selfid}"]`);
+                    existentNode.replaceWith(outputChild);
+                    if (outputChild.dataset.event) {
+                        let replacedNode = document.querySelector(`[data-selfid="${selfid}"]`);
+                        setEventListeners(replacedNode);
+                    };
                 };
             };
         } catch (error) {
