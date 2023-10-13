@@ -1,4 +1,3 @@
-/-  mast
 /+  default-agent, dbug, agentio, server
 |%
 +$  app  [color-one=tape color-two=tape]
@@ -143,23 +142,29 @@
   ++  sail-component
     ^-  manx
     ;main
-      =id  "one"
-      Click The Squares
+      =data-parentid  "h"
+      =data-selfid  "m"
+      ;p(data-parentid "m", data-selfid "n"): Click The Squares
       ;div.square-container
-        =id  "two"
+        =data-parentid  "m"
+        =data-selfid  "a"
         ;div
-          =id  "three"
+          =data-parentid  "a"
+          =data-selfid  "b"
           =class  (weld "square " color-one.app.state)
           =data-event  "click-square-one"
           ;+  ;/  color-one.app.state
         ==
         ;div
-          =id  "four"
+          =data-parentid  "a"
+          =data-selfid  "c"
           =class  (weld "square " color-two.app.state)
           =data-event  "click-square-two"
           ;+  ;/  color-two.app.state
         ==
       ==
+      :: ;+  ?:(=(color-one.app.state "blue") ;div.circle(data-parentid "m", data-selfid "o"); ~)
+      :: ;+  ?:(=(color-two.app.state "red") ;div.circle(data-parentid "m", data-selfid "p"); ~)
     ==
   ::
   ++  style
@@ -194,6 +199,13 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+    }
+    .circle {
+      height: 5rem;
+      width: 5rem;
+      margin: 2rem;
+      border-radius: 5rem;
+      background-color: black;
     }
     .red {
       background-color: red;
@@ -236,19 +248,23 @@
             const htmlData = await response.text();
             let template = document.createElement('template');
             template.innerHTML = htmlData;
-            for (const child of template.content.firstElementChild.children) {
-                if (child.tagName === 'output') {
-                    if (child.id === 'mast-delete-nodes') {
-                        console.log('DELETE!');
+            for (const templateChild of template.content.firstElementChild.children) {
+                if (templateChild.tagName === 'output') {
+                    if (templateChild.id === 'del') {
+                        
                     };
-                    if (child.id === 'mast-new-nodes') {
-        
+                    if (templateChild.id === 'new') {
+                        const parentid = templateChild.firstElementChild.dataset.parentid;
+                        let domParent = document.querySelector(`[data-selfid="${parentid}"]`);
+                        domParent.append(...templateChild.children);
                     };
                 };
-                let existentNode = document.getElementById(child.id);
-                existentNode.replaceWith(child);
-                if (child.dataset.event) {
-                    let replacedNode = document.getElementById(child.id);
+                const selfid = templateChild.dataset.selfid;
+                console.log("selfid: ", selfid);
+                let existentNode = document.querySelector(`[data-selfid="${selfid}"]`);
+                existentNode.replaceWith(templateChild);
+                if (templateChild.dataset.event) {
+                    let replacedNode = document.querySelector(`[data-selfid="${selfid}"]`);
                     setEventListeners(replacedNode);
                 };
             };
@@ -262,6 +278,17 @@
   :: Algorithm 
   ::
   :: :: :: ::
+  ++  gust
+    |=  newstate=versioned-state
+    =/  newdisplay  sail-component(state newstate)
+    :_  newstate(display newdisplay)
+    %-  manx-to-octs:server
+    ^-  manx
+    ;output
+      ;*  %+  gust-algo 
+        [%manx display.state] 
+      [%manx newdisplay]
+    ==
   ++  gust-algo
     |=  [old=$%([%manx manx] [%marl marl]) new=$%([%manx manx] [%marl marl])]
     =/  accumulator=marl  ~
@@ -279,30 +306,28 @@
     ?:  ?&(=(~ +.old) .?(+.new))
       :_  accumulator  
         %-  manx  
-        ;output#mast-new-nodes
+        ;output#new
           ;*  +.new
         ==
     ?:  ?&(.?(+.old) =(~ +.new))
       :_  accumulator
         %-  manx  
-        ;output#mast-delete-nodes;
+        ;output#del;
     %=  $ 
       old  [%manx (manx +2.+.old)]
       new  [%manx (manx +2.+.new)]
       accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
     ==
   ::
-  ++  gust
-    |=  newstate=versioned-state
-    =/  newdisplay  sail-component(state newstate)
-    :_  newstate(display newdisplay)
-    %-  manx-to-octs:server
-    ^-  manx
-    ;output
-      ;*  %+  gust-algo 
-        [%manx display.state] 
-      [%manx newdisplay]
-    ==
+  :: ++  get-id-data
+  ::   |=  attributes=mart
+  ::   ^-  tape
+  ::   ?~  attributes
+  ::     attributes
+  ::   ?:  =(n.i.attributes %data-selfid)
+  ::     v.i.attributes
+  ::   $(attributes t.attributes)
+  ::
   --
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  on-watch

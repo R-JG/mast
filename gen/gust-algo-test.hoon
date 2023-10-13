@@ -83,13 +83,13 @@
   ?:  ?&(=(~ +.old) .?(+.new))
     :_  accumulator  
       %-  manx  
-      ;output#new-node-group
+      ;output#new
         ;*  +.new
       ==
   ?:  ?&(.?(+.old) =(~ +.new))
     :_  accumulator
       %-  manx  
-      ;output#nodes-to-delete;
+      ;output#del;
   :: both old and new are marl, and neither old nor new are null:
   :: recurse into the child node, and nest recursively in the other direction continuing through the list:
   %=  $ 
@@ -97,5 +97,15 @@
     new  [%manx (manx +2.+.new)]
     accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
   ==
+  ::
+  :: ++  get-id-data
+  ::   |=  attributes=mart
+  ::   ^-  tape
+  ::   ?~  attributes
+  ::     attributes
+  ::   ?:  =(n.i.attributes %data-selfid)
+  ::     v.i.attributes
+  ::   $(attributes t.attributes)
+  ::
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 --
