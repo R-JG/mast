@@ -235,66 +235,6 @@
       background-color: green;
     }
     '''
-  ::
-  ++  script
-    ^~
-    %-  trip
-    '''
-    addEventListener('DOMContentLoaded', () => {
-        let eventElements = document.querySelectorAll('[data-event]');
-        eventElements.forEach(el => setEventListeners(el));
-    });
-    function setEventListeners(el) {
-        if (el.dataset.event.startsWith('click')) {
-            el.addEventListener('click',() => urbitClick(el.dataset.event));
-        };
-    };
-    async function urbitClick(tagString) {
-        try {
-            const response = await fetch(window.location.href, {
-                method: 'POST',
-                body: JSON.stringify({
-                    tags: tagString,
-                    data: []
-                })
-            });
-            const htmlData = await response.text();
-            let container = document.createElement('template');
-            container.innerHTML = htmlData;
-            while (container.content.firstElementChild.children.length > 0) {
-                let outputChild = container.content.firstElementChild.firstElementChild;
-                if (outputChild.tagName === 'OUTPUT') {
-                    if (outputChild.id === 'del') {
-                        const idRange = outputChild.dataset.deleterange.split(' ');
-                        let nodeToDelete = document.querySelector(`[data-selfid="${idRange[0]}"]`);
-                        while (nodeToDelete) {
-                            let next = nodeToDelete.nextElementSibling;
-                            nodeToDelete.remove();
-                            if (nodeToDelete.dataset.selfid === idRange[1]) break;
-                            nodeToDelete = next;
-                        };
-                        outputChild.remove();
-                    } else if (outputChild.id === 'new') {
-                        const parentid = outputChild.firstElementChild.dataset.parentid;
-                        let domParent = document.querySelector(`[data-selfid="${parentid}"]`);
-                        domParent.append(...outputChild.children);
-                        outputChild.remove();
-                    };
-                } else {
-                    const selfid = outputChild.dataset.selfid;
-                    let existentNode = document.querySelector(`[data-selfid="${selfid}"]`);
-                    existentNode.replaceWith(outputChild);
-                    if (outputChild.dataset.event) {
-                        let replacedNode = document.querySelector(`[data-selfid="${selfid}"]`);
-                        setEventListeners(replacedNode);
-                    };
-                };
-            };
-        } catch (error) {
-            console.error(error);
-        };
-    };
-    '''
   :: :: :: ::
   ::
   :: Algorithm 
@@ -359,14 +299,78 @@
       +.-.attributes
     $(attributes +.attributes)
   ::
-++  get-last-manx
-  |=  m=marl
-  ^-  manx
-  ?~  m
-    !!
-  ?~  t.+.m
-    -.m
-  $(m +.m)
+  ++  get-last-manx
+    |=  m=marl
+    ^-  manx
+    ?~  m
+      !!
+    ?~  t.+.m
+      -.m
+    $(m +.m)
+  :: :: :: ::
+  ::
+  ::  Script 
+  ::
+  :: :: :: ::
+  ++  script
+    ^~
+    %-  trip
+    '''
+    addEventListener('DOMContentLoaded', () => {
+        let eventElements = document.querySelectorAll('[data-event]');
+        eventElements.forEach(el => setEventListeners(el));
+    });
+    function setEventListeners(el) {
+        if (el.dataset.event.startsWith('click')) {
+            el.addEventListener('click',() => urbitClick(el.dataset.event));
+        };
+    };
+    async function urbitClick(tagString) {
+        try {
+            const response = await fetch(window.location.href, {
+                method: 'POST',
+                body: JSON.stringify({
+                    tags: tagString,
+                    data: []
+                })
+            });
+            const htmlData = await response.text();
+            let container = document.createElement('template');
+            container.innerHTML = htmlData;
+            while (container.content.firstElementChild.children.length > 0) {
+                let outputChild = container.content.firstElementChild.firstElementChild;
+                if (outputChild.tagName === 'OUTPUT') {
+                    if (outputChild.id === 'del') {
+                        const idRange = outputChild.dataset.deleterange.split(' ');
+                        let nodeToDelete = document.querySelector(`[data-selfid="${idRange[0]}"]`);
+                        while (nodeToDelete) {
+                            let next = nodeToDelete.nextElementSibling;
+                            nodeToDelete.remove();
+                            if (nodeToDelete.dataset.selfid === idRange[1]) break;
+                            nodeToDelete = next;
+                        };
+                        outputChild.remove();
+                    } else if (outputChild.id === 'new') {
+                        const parentid = outputChild.firstElementChild.dataset.parentid;
+                        let domParent = document.querySelector(`[data-selfid="${parentid}"]`);
+                        domParent.append(...outputChild.children);
+                        outputChild.remove();
+                    };
+                } else {
+                    const selfid = outputChild.dataset.selfid;
+                    let existentNode = document.querySelector(`[data-selfid="${selfid}"]`);
+                    existentNode.replaceWith(outputChild);
+                    if (outputChild.dataset.event) {
+                        let replacedNode = document.querySelector(`[data-selfid="${selfid}"]`);
+                        setEventListeners(replacedNode);
+                    };
+                };
+            };
+        } catch (error) {
+            console.error(error);
+        };
+    };
+    '''
   --
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  on-watch
