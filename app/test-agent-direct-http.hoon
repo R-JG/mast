@@ -165,7 +165,11 @@
       ==
       ;+  ?:  =(color-one.app.state "blue") 
         ;div.circle(data-parentid "m", data-selfid "o"); 
-      ;div(data-parentid "m", data-selfid "o");
+      ;div.circle(data-parentid "m", data-selfid "o")
+        ;div(data-parentid "o", data-selfid "x");
+        ;div.smallcircle(data-parentid "o", data-selfid "y");
+        ;div(data-parentid "o", data-selfid "z");
+      ==
       ;+  ?:  =(color-two.app.state "red")
         ;div.circle(data-parentid "m", data-selfid "p");
       ;div(data-parentid "m", data-selfid "p");
@@ -211,6 +215,13 @@
       border-radius: 5rem;
       background-color: black;
     }
+    .smallcircle {
+      height: 1rem;
+      width: 1rem;
+      margin: 1rem;
+      border-radius: 1rem;
+      background-color: orange;
+    }
     .red {
       background-color: red;
     }
@@ -252,9 +263,16 @@
             container.innerHTML = htmlData;
             while (container.content.firstElementChild.children.length > 0) {
                 let outputChild = container.content.firstElementChild.firstElementChild;
-                if (outputChild.tagName === 'output') {
+                if (outputChild.tagName === 'OUTPUT') {
                     if (outputChild.id === 'del') {
-
+                        const idRange = outputChild.dataset.deleterange.split(' ');
+                        let nodeToDelete = document.querySelector(`[data-selfid="${idRange[0]}"]`);
+                        while (nodeToDelete) {
+                            let next = nodeToDelete.nextElementSibling;
+                            nodeToDelete.remove();
+                            if (nodeToDelete.dataset.selfid === idRange[1]) break;
+                            nodeToDelete = next;
+                        };
                         outputChild.remove();
                     } else if (outputChild.id === 'new') {
                         const parentid = outputChild.firstElementChild.dataset.parentid;
@@ -315,23 +333,40 @@
         ==
     ?:  ?&(.?(+.old) =(~ +.new))
       :_  accumulator
-        %-  manx  
-        ;output#del;
+      ?+  -.old  !!
+        %marl
+          =/  last-child  (get-last-manx +.old)
+          =/  id-range 
+            %+  weld  
+              (get-selfid-data +.-.-.+.old)
+            %+  weld  " "  (get-selfid-data +.-.last-child)
+          %-  manx  
+          ;output#del(data-deleterange id-range);
+      ==
     %=  $ 
       old  [%manx (manx +2.+.old)]
       new  [%manx (manx +2.+.new)]
       accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
     ==
   ::
-  :: ++  get-id-data
-  ::   |=  attributes=mart
-  ::   ^-  tape
-  ::   ?~  attributes
-  ::     attributes
-  ::   ?:  =(n.i.attributes %data-selfid)
-  ::     v.i.attributes
-  ::   $(attributes t.attributes)
+  ++  get-selfid-data
+    |=  attributes=mart
+    ^-  tape
+    |-
+    ?~  attributes
+      attributes
+    ?:  =(-.-.attributes %data-selfid)
+      +.-.attributes
+    $(attributes +.attributes)
   ::
+++  get-last-manx
+  |=  m=marl
+  ^-  manx
+  ?~  m
+    !!
+  ?~  t.+.m
+    -.m
+  $(m +.m)
   --
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  on-watch

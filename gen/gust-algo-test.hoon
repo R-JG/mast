@@ -88,8 +88,18 @@
       ==
   ?:  ?&(.?(+.old) =(~ +.new))
     :_  accumulator
-      %-  manx  
-      ;output#del;
+    :: a switch is necessary here to resolve type union issues
+    :: produce an output container node with metadata consisting in the ids of the first and last to delete. 
+    ?+  -.old  !!
+      %marl
+        =/  last-child  (get-last-manx +.old)
+        =/  id-range  
+          %+  weld  
+            (get-selfid-data +.-.-.+.old)
+          %+  weld  " "  (get-selfid-data +.-.last-child)
+        %-  manx  
+        ;output#del(data-deleterange id-range);
+    ==
   :: both old and new are marl, and neither old nor new are null:
   :: recurse into the child node, and nest recursively in the other direction continuing through the list:
   %=  $ 
@@ -98,14 +108,23 @@
     accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
   ==
   ::
-  :: ++  get-id-data
-  ::   |=  attributes=mart
-  ::   ^-  tape
-  ::   ?~  attributes
-  ::     attributes
-  ::   ?:  =(n.i.attributes %data-selfid)
-  ::     v.i.attributes
-  ::   $(attributes t.attributes)
+++  get-selfid-data
+  |=  attributes=mart
+  ^-  tape
+  ?~  attributes
+    attributes
+  ?:  =(-.-.-.attributes %data-selfid)
+    +.-.attributes
+  $(attributes +.attributes)
+  ::
+++  get-last-manx
+  |=  m=marl
+  ^-  manx
+  ?~  m
+    !!
+  ?~  +.m
+    -.m
+  $(m +.m)
   ::
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 --
