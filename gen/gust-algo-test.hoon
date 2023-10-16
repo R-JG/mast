@@ -4,9 +4,9 @@
 =<
 %-  crip
 %-  en-xml:html
+^-  manx
   ;output
-    :: ;*  (algo2 [%manx doc1] [%manx doc2])
-    ;+  (add-mastids-to-manx doc2)
+    ;*  (algo2 [%manx (add-mastids-to-manx doc1)] [%manx (add-mastids-to-manx doc2)])
   ==
 |%
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
@@ -135,6 +135,10 @@
   (traverse-node main-node initial-mastid)
   ++  traverse-node
     |=  [node=manx mastid=tape]
+    :: if this is a text node, just return the node:
+    :: (text nodes cannot contain the mastid attribute)
+    ?:  =(%$ -.-.node)
+      node
     =:  +.-.node  (mart [[%data-mastid mastid] +.-.node])
         +.node  (traverse-child-list +.node mastid)
     ==

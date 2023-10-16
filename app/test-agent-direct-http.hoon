@@ -135,12 +135,13 @@
         ==
       ==
       ;body
-        :: add-mastids-to-manx is temporarily here 
-        ;+  (add-mastids-to-manx sail-component)
+        ;+  sail-component
       ==
     ==
   ::
   ++  sail-component
+    :: temporary location for add-mastids-to-manx
+    %-  add-mastids-to-manx
     ^-  manx
     ;main
       ;p: Click The Squares
@@ -308,6 +309,8 @@
     (traverse-node main-node initial-mastid)
     ++  traverse-node
       |=  [node=manx mastid=tape]
+      ?:  =(%$ -.-.node)
+        node
       =:  +.-.node  (mart [[%data-mastid mastid] +.-.node])
           +.node  (traverse-child-list +.node mastid)
       ==
@@ -352,10 +355,8 @@
             const htmlData = await response.text();
             let container = document.createElement('template');
             container.innerHTML = htmlData;
-            console.log(container);
             while (container.content.firstElementChild.children.length > 0) {
                 let outputChild = container.content.firstElementChild.firstElementChild;
-                console.log(outputChild);
                 if (outputChild.tagName === 'OUTPUT') {
                     if (outputChild.id === 'del') {
                         const idRange = outputChild.dataset.deleterange.split(' ');
