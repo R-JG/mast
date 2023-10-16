@@ -144,7 +144,11 @@
     %-  add-mastids-to-manx
     ^-  manx
     ;main
-      ;p: Click The Squares
+      ;p
+        ;+  ?:  =(color-two.app.state "red")
+          ;/  "Click The Squares"
+        ;/  "conditionally rendered text!"
+      ==
       ;div.square-container
         ;div
           =class  (weld "square " color-one.app.state)
@@ -251,11 +255,15 @@
     |-  ^-  marl
     ?>  =(-.old -.new)
     ?:  =(-.new %manx)
-      ?.  =(+2.+.old +2.+.new)
+      ?.  =(-.+.old -.+.new)
         [(manx +.new) accumulator]
+      ?:  =("masttext" (get-value-from-mart (mart +.-.+.new) %class))
+        ?.  =(+.-.+.-.-.+.+.old +.-.+.-.-.+.+.new)
+          [(manx +.new) accumulator]
+        accumulator
       %=  $
-        old  [%marl +3.+.old]
-        new  [%marl +3.+.new]
+        old  [%marl +.+.old]
+        new  [%marl +.+.new]
       ==
     ?:  ?&(=(~ +.old) =(~ +.new))
       accumulator
@@ -272,8 +280,8 @@
           =/  last-child  (get-last-manx +.old)
           =/  id-range 
             %+  weld  
-              (get-mastid-from-mart +.-.-.+.old)
-            %+  weld  " "  (get-mastid-from-mart +.-.last-child)
+              (get-value-from-mart +.-.-.+.old %data-mastid)
+            %+  weld  " "  (get-value-from-mart +.-.last-child %data-mastid)
           %-  manx  
           ;output#del(data-deleterange id-range);
       ==
@@ -292,13 +300,13 @@
       -.m
     $(m +.m)
   ::
-  ++  get-mastid-from-mart
-    |=  attributes=mart
+  ++  get-value-from-mart
+    |=  [attributes=mart tag=@tas]
     ^-  tape
     |-
     ?~  attributes
       attributes
-    ?:  =(-.-.attributes %data-mastid)
+    ?:  =(-.-.attributes tag)
       +.-.attributes
     $(attributes +.attributes)
   ::
@@ -310,7 +318,9 @@
     ++  traverse-node
       |=  [node=manx mastid=tape]
       ?:  =(%$ -.-.node)
-        node
+        ;span.masttext(data-mastid mastid)
+          ;+  node
+        ==
       =:  +.-.node  (mart [[%data-mastid mastid] +.-.node])
           +.node  (traverse-child-list +.node mastid)
       ==
@@ -396,7 +406,7 @@
   ^-  (quip card _this)
   ?+  path  (on-watch:def path)
     [%http-response *]
-      %-  (slog leaf+"Eyre subscribed to {(spud path)}." ~)
+      :: %-  (slog leaf+"Eyre subscribed to {(spud path)}." ~)
       `this
   ==
 ++  on-leave  on-leave:def

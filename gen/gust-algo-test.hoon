@@ -21,6 +21,7 @@
   ;body#testid.testclass
     ;a
       ;h1: Hello World
+      ;+  ;/  "here is a text node"
     ==
     ;div;
   ==
@@ -70,13 +71,24 @@
   ?>  =(-.old -.new)
   ?:  =(-.new %manx)
     :: both old and new are manx:
-    ?.  =(+2.+.old +2.+.new)
-      :: if the tags are not equal, add new to the accumulator:
+    :: if the tags are not equal, add new to the accumulator:
+    ?.  =(-.+.old -.+.new)
       [(manx +.new) accumulator]
+    :: if the tags are equal, check if new is a container for a text node (i.e. that they are both text node containers).
+    :: (currently this is making the assumption that there is a class attribute "masttext" and then the id attribute)
+    ?:  =("masttext" (get-value-from-mart (mart +.-.+.new) %class))
+      :: if the text values are different, add the new text node with its container to the accumulator:
+      :: note:
+      :: -.+.+.new is the first child of the container, i.e. the text node itself.
+      :: +.-.+.-.-.+.+.new is the value of the first attribute of the text node.
+      ?.  =(+.-.+.-.-.+.+.old +.-.+.-.-.+.+.new)
+        [(manx +.new) accumulator]
+      :: else if the text values are equal, make no changes:
+      accumulator
     :: else recurse into the child list
     %=  $
-      old  [%marl +3.+.old]
-      new  [%marl +3.+.new]
+      old  [%marl +.+.old]
+      new  [%marl +.+.new]
     ==
   :: both old and new are marl:
   ?:  ?&(=(~ +.old) =(~ +.new))
@@ -96,8 +108,8 @@
         =/  last-child  (get-last-manx +.old)
         =/  id-range 
           %+  weld  
-            (get-mastid-from-mart +.-.-.+.old)
-          %+  weld  " "  (get-mastid-from-mart +.-.last-child)
+            (get-value-from-mart +.-.-.+.old %data-mastid)
+          %+  weld  " "  (get-value-from-mart +.-.last-child %data-mastid)
         %-  manx  
         ;output#del(data-deleterange id-range);
     ==
@@ -118,13 +130,13 @@
     -.m
   $(m +.m)
   ::
-++  get-mastid-from-mart
-  |=  attributes=mart
+++  get-value-from-mart
+  |=  [attributes=mart tag=@tas]
   ^-  tape
   |-
   ?~  attributes
     attributes
-  ?:  =(-.-.attributes %data-mastid)
+  ?:  =(-.-.attributes tag)
     +.-.attributes
   $(attributes +.attributes)
   ::
@@ -135,10 +147,11 @@
   (traverse-node main-node initial-mastid)
   ++  traverse-node
     |=  [node=manx mastid=tape]
-    :: if this is a text node, just return the node:
-    :: (text nodes cannot contain the mastid attribute)
+    :: if this is a text node, return the text node wrapped in a container node which is able to contain the mastid:
     ?:  =(%$ -.-.node)
-      node
+      ;span.masttext(data-mastid mastid)
+        ;+  node
+      ==
     =:  +.-.node  (mart [[%data-mastid mastid] +.-.node])
         +.node  (traverse-child-list +.node mastid)
     ==
