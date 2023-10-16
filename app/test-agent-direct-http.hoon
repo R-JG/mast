@@ -135,44 +135,37 @@
         ==
       ==
       ;body
-        ;+  sail-component
+        :: add-mastids-to-manx is temporarily here 
+        ;+  (add-mastids-to-manx sail-component)
       ==
     ==
   ::
   ++  sail-component
     ^-  manx
     ;main
-      =data-parentid  "h"
-      =data-selfid  "m"
-      ;p(data-parentid "m", data-selfid "n"): Click The Squares
+      ;p: Click The Squares
       ;div.square-container
-        =data-parentid  "m"
-        =data-selfid  "a"
         ;div
-          =data-parentid  "a"
-          =data-selfid  "b"
           =class  (weld "square " color-one.app.state)
           =data-event  "click-square-one"
           ;+  ;/  color-one.app.state
         ==
         ;div
-          =data-parentid  "a"
-          =data-selfid  "c"
           =class  (weld "square " color-two.app.state)
           =data-event  "click-square-two"
           ;+  ;/  color-two.app.state
         ==
       ==
       ;+  ?:  =(color-one.app.state "blue") 
-        ;div.circle(data-parentid "m", data-selfid "o"); 
-      ;div.circle(data-parentid "m", data-selfid "o")
-        ;div(data-parentid "o", data-selfid "x");
-        ;div.smallcircle(data-parentid "o", data-selfid "y");
-        ;div(data-parentid "o", data-selfid "z");
+        ;div.circle; 
+      ;div.circle
+        ;div;
+        ;div.smallcircle;
+        ;div;
       ==
       ;+  ?:  =(color-two.app.state "red")
-        ;div.circle(data-parentid "m", data-selfid "p");
-      ;div(data-parentid "m", data-selfid "p");
+        ;div.circle;
+      ;div;
     ==
   ::
   ++  style
@@ -237,7 +230,7 @@
     '''
   :: :: :: ::
   ::
-  :: Algorithm 
+  :: Algorithms
   ::
   :: :: :: ::
   ++  gust
@@ -278,8 +271,8 @@
           =/  last-child  (get-last-manx +.old)
           =/  id-range 
             %+  weld  
-              (get-selfid-data +.-.-.+.old)
-            %+  weld  " "  (get-selfid-data +.-.last-child)
+              (get-mastid-from-mart +.-.-.+.old)
+            %+  weld  " "  (get-mastid-from-mart +.-.last-child)
           %-  manx  
           ;output#del(data-deleterange id-range);
       ==
@@ -289,16 +282,6 @@
       accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
     ==
   ::
-  ++  get-selfid-data
-    |=  attributes=mart
-    ^-  tape
-    |-
-    ?~  attributes
-      attributes
-    ?:  =(-.-.attributes %data-selfid)
-      +.-.attributes
-    $(attributes +.attributes)
-  ::
   ++  get-last-manx
     |=  m=marl
     ^-  manx
@@ -307,6 +290,38 @@
     ?~  t.+.m
       -.m
     $(m +.m)
+  ::
+  ++  get-mastid-from-mart
+    |=  attributes=mart
+    ^-  tape
+    |-
+    ?~  attributes
+      attributes
+    ?:  =(-.-.attributes %data-mastid)
+      +.-.attributes
+    $(attributes +.attributes)
+  ::
+  ++  add-mastids-to-manx
+    |=  main-node=manx
+    =/  initial-mastid=tape  "0"
+    |^  ^-  manx
+    (traverse-node main-node initial-mastid)
+    ++  traverse-node
+      |=  [node=manx mastid=tape]
+      =:  +.-.node  (mart [[%data-mastid mastid] +.-.node])
+          +.node  (traverse-child-list +.node mastid)
+      ==
+      node
+    ++  traverse-child-list
+      |=  [child-list=marl mastid=tape]
+      =/  i=@ud  0
+      |-  ^-  marl
+      ?~  child-list
+        child-list
+      :-  %+  traverse-node  (manx -.child-list) 
+        (weld (scow %ud i) (weld "-" mastid))
+      $(child-list +.child-list, i +(i))
+    --
   :: :: :: ::
   ::
   ::  Script 
@@ -337,31 +352,33 @@
             const htmlData = await response.text();
             let container = document.createElement('template');
             container.innerHTML = htmlData;
+            console.log(container);
             while (container.content.firstElementChild.children.length > 0) {
                 let outputChild = container.content.firstElementChild.firstElementChild;
+                console.log(outputChild);
                 if (outputChild.tagName === 'OUTPUT') {
                     if (outputChild.id === 'del') {
                         const idRange = outputChild.dataset.deleterange.split(' ');
-                        let nodeToDelete = document.querySelector(`[data-selfid="${idRange[0]}"]`);
+                        let nodeToDelete = document.querySelector(`[data-mastid="${idRange[0]}"]`);
                         while (nodeToDelete) {
                             let next = nodeToDelete.nextElementSibling;
                             nodeToDelete.remove();
-                            if (nodeToDelete.dataset.selfid === idRange[1]) break;
+                            if (nodeToDelete.dataset.mastid === idRange[1]) break;
                             nodeToDelete = next;
                         };
                         outputChild.remove();
                     } else if (outputChild.id === 'new') {
-                        const parentid = outputChild.firstElementChild.dataset.parentid;
-                        let domParent = document.querySelector(`[data-selfid="${parentid}"]`);
+                        const parentid = outputChild.firstElementChild.dataset.mastid.split(/-(.*)/, 2)[1];
+                        let domParent = document.querySelector(`[data-mastid="${parentid}"]`);
                         domParent.append(...outputChild.children);
                         outputChild.remove();
                     };
                 } else {
-                    const selfid = outputChild.dataset.selfid;
-                    let existentNode = document.querySelector(`[data-selfid="${selfid}"]`);
+                    const mastid = outputChild.dataset.mastid;
+                    let existentNode = document.querySelector(`[data-mastid="${mastid}"]`);
                     existentNode.replaceWith(outputChild);
                     if (outputChild.dataset.event) {
-                        let replacedNode = document.querySelector(`[data-selfid="${selfid}"]`);
+                        let replacedNode = document.querySelector(`[data-mastid="${mastid}"]`);
                         setEventListeners(replacedNode);
                     };
                 };

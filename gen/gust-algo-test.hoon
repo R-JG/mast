@@ -5,7 +5,8 @@
 %-  crip
 %-  en-xml:html
   ;output
-    ;*  (algo2 [%manx doc1] [%manx doc2])
+    :: ;*  (algo2 [%manx doc1] [%manx doc2])
+    ;+  (add-mastids-to-manx doc2)
   ==
 |%
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
@@ -17,7 +18,7 @@
   ==
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  doc2
-  ;body
+  ;body#testid.testclass
     ;a
       ;h1: Hello World
     ==
@@ -93,10 +94,10 @@
     ?+  -.old  !!
       %marl
         =/  last-child  (get-last-manx +.old)
-        =/  id-range  
+        =/  id-range 
           %+  weld  
-            (get-selfid-data +.-.-.+.old)
-          %+  weld  " "  (get-selfid-data +.-.last-child)
+            (get-mastid-from-mart +.-.-.+.old)
+          %+  weld  " "  (get-mastid-from-mart +.-.last-child)
         %-  manx  
         ;output#del(data-deleterange id-range);
     ==
@@ -108,23 +109,45 @@
     accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
   ==
   ::
-++  get-selfid-data
-  |=  attributes=mart
-  ^-  tape
-  ?~  attributes
-    attributes
-  ?:  =(-.-.-.attributes %data-selfid)
-    +.-.attributes
-  $(attributes +.attributes)
-  ::
 ++  get-last-manx
   |=  m=marl
   ^-  manx
   ?~  m
     !!
-  ?~  +.m
+  ?~  t.+.m
     -.m
   $(m +.m)
   ::
+++  get-mastid-from-mart
+  |=  attributes=mart
+  ^-  tape
+  |-
+  ?~  attributes
+    attributes
+  ?:  =(-.-.attributes %data-mastid)
+    +.-.attributes
+  $(attributes +.attributes)
+  ::
+++  add-mastids-to-manx
+  |=  main-node=manx
+  =/  initial-mastid=tape  "0"
+  |^  ^-  manx
+  (traverse-node main-node initial-mastid)
+  ++  traverse-node
+    |=  [node=manx mastid=tape]
+    =:  +.-.node  (mart [[%data-mastid mastid] +.-.node])
+        +.node  (traverse-child-list +.node mastid)
+    ==
+    node
+  ++  traverse-child-list
+    |=  [child-list=marl mastid=tape]
+    =/  i=@ud  0
+    |-  ^-  marl
+    ?~  child-list
+      child-list
+    :-  %+  traverse-node  (manx -.child-list) 
+      (weld (scow %ud i) (weld "-" mastid))
+    $(child-list +.child-list, i +(i))
+  --
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 --
