@@ -149,7 +149,15 @@
           ;/  "Click The Squares"
         ;/  "conditionally rendered text!"
       ==
-      ;div.square-container
+      ;div.container
+        ;*  %+  turn  color-one.app.state
+          |=  t=@t 
+          ^-  manx
+          ;div.smallcircle
+            ;+  ;/  (trip t)
+          ==
+      ==
+      ;div.container
         ;div
           =class  (weld "square " color-one.app.state)
           =data-event  "click-square-one"
@@ -161,16 +169,18 @@
           ;+  ;/  color-two.app.state
         ==
       ==
-      ;+  ?:  =(color-one.app.state "blue") 
-        ;div.circle; 
-      ;div.circle
-        ;div;
-        ;div.smallcircle;
+      ;div.container
+        ;+  ?:  =(color-one.app.state "blue") 
+          ;div.circle; 
+        ;div.circle
+          ;div;
+          ;div.smallcircle;
+          ;div;
+        ==
+        ;+  ?:  =(color-two.app.state "red")
+          ;div.circle;
         ;div;
       ==
-      ;+  ?:  =(color-two.app.state "red")
-        ;div.circle;
-      ;div;
     ==
   ::
   ++  style
@@ -190,7 +200,7 @@
       justify-content: center;
       align-items: center;
     }
-    .square-container {
+    .container {
       display: flex;
       flex-direction: row;
     }
