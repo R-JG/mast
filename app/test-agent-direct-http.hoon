@@ -1,8 +1,8 @@
-/+  default-agent, dbug, agentio, server
+/-  test-agent-direct-http
+/+  default-agent, dbug, agentio, server, mast
+/=  test-sail-component  /app/sail/test-sail-component
 |%
-+$  app  [color-one=tape color-two=tape]
-+$  display  manx
-+$  state-0  [%0 [=app =display]]
++$  state-0  [%0 teststate:test-agent-direct-http]
 +$  versioned-state  $%(state-0)
 +$  card  card:agent:gall
 --
@@ -14,6 +14,13 @@
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
     io    ~(. agentio bowl)
+    :: set up mast with the base url and a list of cells of routes to gates which produce manx:
+    mast-init  
+      %-  mast  
+        'mastdirecthttp'
+      %-  limo  :~  
+        ['/' test-sail-component]
+      ==
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  on-init
   ^-  (quip card _this)
