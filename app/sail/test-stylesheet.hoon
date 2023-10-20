@@ -1,15 +1,3 @@
-:: add the ability for the dev to specify their own document head, into which the script will be injected.
-
-=;  style
-  ^-  manx
-  ;head
-    ;title: mast
-    ;meta(charset "utf-8");
-    ;style
-      ;+  ;/  style
-    ==
-  ==
-::
 ^~
 %-  trip
 '''

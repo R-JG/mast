@@ -36,14 +36,20 @@
   :-  ~
   %-  manx-to-octs:server
   ^-  manx
+  ?~  c.current-display-state  !!
+  ?~  t.c.current-display-state  !!
+  ?~  c.new-display-state  !!
+  ?~  t.c.new-display-state  !!
   ?-  gust-action
     %route
-      (sail-document new-display-state)
+      =.  c.i.c.new-display-state  
+        (marl [script-node c.i.c.new-display-state])
+      new-display-state
     %event
       ;output
         ;*  %+  gust-algo
-          [%manx current-display-state]
-        [%manx new-display-state]
+          [%manx i.t.c.current-display-state]
+        [%manx i.t.c.new-display-state]
       ==
   ==
 ::
@@ -171,40 +177,16 @@
   ?:  =(-.-.attributes tag)
     +.-.attributes
   $(attributes +.attributes)
-::
-++  find-yard
-  |*  [=yards target-url=@t]
-  =/  i=@ud  0
-  |-  ^-  (unit @ud)
-  ?~  yards
-    ~
-  ?:  =(target-url url.i.yards)
-    `i
-  $(yards t.yards, i +(i))
-:: :: :: ::
-::
-::  Sail
-::
-:: :: :: ::
-++  sail-document
-  |=  root-component=manx
-  ^-  manx
-  ;html
-    ;head
-      ;meta(charset "utf-8");
-      ;script
-        ;+  ;/  script
-      ==
-    ==
-    ;body
-      ;+  root-component
-    ==
-  ==
 :: :: :: ::
 ::
 ::  Script 
 ::
 :: :: :: ::
+++  script-node
+  ^-  manx
+  ;script
+    ;+  ;/  script
+  ==
 ++  script
   ^~
   %-  trip

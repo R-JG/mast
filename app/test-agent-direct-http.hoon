@@ -1,7 +1,7 @@
 /-  test-agent-direct-http
 /+  default-agent, dbug, agentio, server, mast
-/=  test-sail-component  /app/sail/test-sail-component
-/=  test-stylesheet  /app/sail/test-stylesheet
+/=  test-sail  /app/sail/test-sail
+/=  test-sail-two  /app/sail/test-sail-two
 |%
 +$  state-0  [%0 teststate:test-agent-direct-http]
 +$  versioned-state  $%(state-0)
@@ -18,7 +18,8 @@
     :: a list of cells of routes to gates which produce manx are required for rig:mast
     yards  %-  limo  
       :~  
-        ['/mastdirecthttp' test-sail-component]
+        ['/mastdirecthttp' test-sail]
+        ['/mastdirecthttp/two' test-sail-two]
       ==
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
 ++  on-init
