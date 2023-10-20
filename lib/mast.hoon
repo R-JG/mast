@@ -1,63 +1,60 @@
 /+  server
-|*  [baseurl=@t yards=(list [yard=@t sail=gate])]
 |%
++$  yard  [url=@t sail=gate]
++$  yards  (list yard)
 +$  parsed-request  [tags=@tas data=(list [@t @t])]
++$  gust-action  ?(%route %event)
 +$  gust-sample  $%([%manx manx] [%marl marl])
++$  card  card:agent:gall
 :: :: :: ::
 ::
 ::  Server 
 ::
 :: :: :: ::
+
+:: ++  auth
+:: add a separate authentication helper arm:
+:: ?.  authenticated.req
+::   [(make-307 eyreid) current-display-state]
+
+::
 ++  parse
   |=  req=inbound-request:eyre
-  ^-  parsed-request
+  ^-  ?(~ parsed-request)
   =/  jsonunit  (de:json:html +.+.body.request.req)
+  ?~  jsonunit
+    ~
   %-  (ot ~[tags+so data+(ar (at ~[so so]))]):dejs:format
-  +.jsonunit
+  u.jsonunit
 ::
-++  route
-  |*  [eyreid=@ta req=inbound-request:eyre app-state=* current-display-state=manx]
-  ^-  [(list card) manx]
-  ?~  yards  !!
-  ?.  authenticated.req
-    [(make-307 eyreid) current-display-state]
-  ~&  '<<<URL>>>'
-  ~&  url.request.req
-  =/  target-sail  (get-sail-from-yards url.request.req)
-  ?~  target-sail
-    [(make-404 eyreid) current-display-state]
-  =/  new-display-state  (rig (target-sail app-state))
-  :_  new-display-state
-  %+  make-200  eyreid
-  :-  ~
-  %-  manx-to-octs:server
-  ^-  manx
-  (sail-document new-display-state)
+++  rig
+  |*  [target-url=@t =yards app-state=*]
+  ?~  yards
+    :: find a better solution for 404s, i.e. when a yard is not found.
+    (set-ids (manx [[%div ~] [[%$ [%$ "404"] ~] ~] ~]))
+  ?:  =(target-url url.i.yards)
+    (set-ids (manx (sail.i.yards app-state)))
+  $(yards t.yards)
 ::
 ++  gust
-  |*  [eyreid=@ta req=inbound-request:eyre app-state=* current-display-state=manx]
-  ^-  [(list card) manx]
-  ?~  yards  !!
-  ?.  authenticated.req
-    [(make-307 eyreid) current-display-state]
-  ~&  '<<<URL>>>'
-  ~&  url.request.req
-  =/  target-sail  (get-sail-from-yards url.request.req)
-  ?~  target-sail
-    [(make-404 eyreid) current-display-state]
-  =/  new-display-state  (rig (target-sail app-state))
-  :_  new-display-state
-  %+  make-200  eyreid 
+  |=  [=gust-action eyreid=@ta current-display-state=manx new-display-state=manx]
+  ^-  (list card)
+  %+  make-html-200  eyreid 
   :-  ~
   %-  manx-to-octs:server
   ^-  manx
-  ;output
-    ;*  %+  gust-algo
-      [%manx current-display-state] 
-    [%manx new-display-state]
+  ?-  gust-action
+    %route
+      (sail-document new-display-state)
+    %event
+      ;output
+        ;*  %+  gust-algo
+          [%manx current-display-state]
+        [%manx new-display-state]
+      ==
   ==
 ::
-++  make-200
+++  make-html-200
   |=  [eyreid=@ta resdata=(unit octs)]
   ^-  (list card)
   =/  reshead  
@@ -78,11 +75,11 @@
   ^-(simple-payload:http [reshead ~])
 ::
 ++  make-404
-  |=  eyreid=@ta
+  |=  [eyreid=@ta resdata=(unit octs)]
   ^-  (list card)
   %+  give-simple-payload:app:server
     eyreid 
-  ^-(simple-payload:http [[404 ~] ~])
+  ^-(simple-payload:http [[404 ~] resdata])
 :: :: :: ::
 ::
 :: Algorithms
@@ -130,7 +127,7 @@
     accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
   ==
 ::
-++  rig
+++  set-ids
   |=  main-node=manx
   =/  initial-mastid=tape  "0"
   |^  ^-  manx
@@ -175,14 +172,15 @@
     +.-.attributes
   $(attributes +.attributes)
 ::
-++  get-sail-from-yards
-  |=  target-yard=@t
-  ^-  ?(~ gate)
+++  find-yard
+  |*  [=yards target-url=@t]
+  =/  i=@ud  0
+  |-  ^-  (unit @ud)
   ?~  yards
-    yards
-  ?:  =(target-yard -.-.yards)
-    +.-.yards
-  $(yards +.yards)
+    ~
+  ?:  =(target-url url.i.yards)
+    `i
+  $(yards t.yards, i +(i))
 :: :: :: ::
 ::
 ::  Sail
@@ -193,7 +191,6 @@
   ^-  manx
   ;html
     ;head
-      ;title: mast
       ;meta(charset "utf-8");
       ;script
         ;+  ;/  script
@@ -240,25 +237,41 @@
                       const idRange = outputChild.dataset.deleterange.split(' ');
                       let nodeToDelete = document.querySelector(`[data-mastid="${idRange[0]}"]`);
                       while (nodeToDelete) {
-                          let next = nodeToDelete.nextElementSibling;
+                          let next = nodeToDelete.nextElementSibling; 
                           nodeToDelete.remove();
                           if (nodeToDelete.dataset.mastid === idRange[1]) break;
                           nodeToDelete = next;
                       };
                       outputChild.remove();
                   } else if (outputChild.id === 'new') {
-                      const parentid = outputChild.firstElementChild.dataset.mastid.split(/-(.*)/, 2)[1];
+                      const firstChildId = outputChild.firstElementChild.dataset.mastid;
+                      const parentid = firstChildId.split(/-(.*)/, 2)[1];
                       let domParent = document.querySelector(`[data-mastid="${parentid}"]`);
                       domParent.append(...outputChild.children);
+                      let appendedChild = domParent.querySelector(`[data-mastid="${firstChildId}"]`);
+                      while (appendedChild) {
+                          if (appendedChild.dataset.event) {
+                              setEventListeners(appendedChild);
+                          };
+                          if (appendedChild.childElementCount > 0) {
+                              let childrenNeedingEvents = appendedChild.querySelectorAll('[data-event]');
+                              childrenNeedingEvents.forEach(child => setEventListeners(child));
+                          };
+                          appendedChild = appendedChild.nextElementSibling;
+                      };
                       outputChild.remove();
                   };
               } else {
                   const mastid = outputChild.dataset.mastid;
                   let existentNode = document.querySelector(`[data-mastid="${mastid}"]`);
                   existentNode.replaceWith(outputChild);
-                  if (outputChild.dataset.event) {
-                      let replacedNode = document.querySelector(`[data-mastid="${mastid}"]`);
+                  let replacedNode = document.querySelector(`[data-mastid="${mastid}"]`);
+                  if (replacedNode.dataset.event) {
                       setEventListeners(replacedNode);
+                  };
+                  if (replacedNode.childElementCount > 0) {
+                      let childrenNeedingEvents = replacedNode.querySelectorAll('[data-event]');
+                      childrenNeedingEvents.forEach(child => setEventListeners(child));
                   };
               };
           };
@@ -267,5 +280,4 @@
       };
   };
   '''
-::
 --
