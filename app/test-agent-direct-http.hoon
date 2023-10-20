@@ -52,65 +52,36 @@
     |=  [eyreid=@ta req=inbound-request:eyre]
     ^-  (quip card _state)
     ?.  authenticated.req
-      [(make-307 eyreid) state]
-    ?+  method.request.req  [(make-405 eyreid) state]
+      [(make-307:mast eyreid) state]
+    ?+  method.request.req  [(make-400:mast eyreid) state]
       %'GET'
         =/  rigged-sail  (rig:mast url.request.req yards app.state)
-        :_  state(display rigged-sail)
-        (gust:mast %route eyreid display.state rigged-sail)
+        :-  (gust:mast %route eyreid display.state rigged-sail)
+        state(display rigged-sail)
       ::
       %'POST'
         :: parsing the request
         =/  parsedjson  (parse:mast req)
         ?~  parsedjson  !!
         :: handling the events
-        ?+  tags.parsedjson  [(make-400 eyreid) state]
+        ?+  tags.parsedjson  [(make-400:mast eyreid) state]
           %click-square-one
             =/  newcolor  ?:(=(color-one.app.state "blue") "green" "blue")
             =/  new-app-state  app.state(color-one newcolor)
             :: implementing rig and gust:
             =/  rigged-sail  (rig:mast url.request.req yards new-app-state)
-            :_  state(app new-app-state, display rigged-sail)
-            (gust:mast %event eyreid display.state rigged-sail)
+            :-  (gust:mast %event eyreid display.state rigged-sail)
+            state(app new-app-state, display rigged-sail)
           ::
           %click-square-two
             =/  newcolor  ?:(=(color-two.app.state "red") "pink" "red")
             =/  new-app-state  app.state(color-two newcolor)
             :: implementing rig and gust:
             =/  rigged-sail  (rig:mast url.request.req yards new-app-state)
-            :_  state(app new-app-state, display rigged-sail)
-            (gust:mast %event eyreid display.state rigged-sail)
+            :-  (gust:mast %event eyreid display.state rigged-sail)
+            state(app new-app-state, display rigged-sail)
         ==
     ==
-  ::
-  ++  make-307
-    |=  eyreid=@ta
-    ^-  (list card)
-    =/  reshead  [307 ['Location' '/~/login?redirect='] ~]
-    %+  give-simple-payload:app:server 
-      eyreid 
-    ^-(simple-payload:http [reshead ~])
-  ::
-  ++  make-400
-    |=  eyreid=@ta
-    ^-  (list card)
-    %+  give-simple-payload:app:server
-      eyreid 
-    ^-(simple-payload:http [[400 ~] ~])
-  ::
-  ++  make-405
-    |=  eyreid=@ta
-    ^-  (list card)
-    =/  reshead
-      :-  405
-      :~  ['Content-Type' 'text/html']
-          ['Content-Length' '31']
-          ['Allow' 'GET, POST']
-      ==
-    =/  resdata  (some (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>'))
-    %+  give-simple-payload:app:server
-      eyreid 
-    ^-(simple-payload:http [reshead resdata])
   :: :: :: ::
   ::
   ::  Sail

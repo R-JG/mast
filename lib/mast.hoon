@@ -11,13 +11,6 @@
 ::  Server 
 ::
 :: :: :: ::
-
-:: ++  auth
-:: add a separate authentication helper arm:
-:: ?.  authenticated.req
-::   [(make-307 eyreid) current-display-state]
-
-::
 ++  parse
   |=  req=inbound-request:eyre
   ^-  ?(~ parsed-request)
@@ -73,6 +66,13 @@
   %+  give-simple-payload:app:server 
     eyreid 
   ^-(simple-payload:http [reshead ~])
+::
+++  make-400
+  |=  eyreid=@ta
+  ^-  (list card)
+  %+  give-simple-payload:app:server
+    eyreid 
+  ^-(simple-payload:http [[400 ~] ~])
 ::
 ++  make-404
   |=  [eyreid=@ta resdata=(unit octs)]
