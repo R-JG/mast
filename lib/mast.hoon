@@ -3,7 +3,7 @@
 +$  yard  [url=@t sail=gate]
 +$  yards  (list yard)
 +$  parsed-request  [tags=@tas data=(list [@t @t])]
-+$  gust-action  ?(%route %event)
++$  gust-action  ?(%page %update)
 +$  gust-sample  $%([%manx manx] [%marl marl])
 +$  card  card:agent:gall
 :: :: :: ::
@@ -23,8 +23,7 @@
 ++  rig
   |*  [target-url=@t =yards app-state=*]
   ?~  yards
-    :: find a better solution for 404s, i.e. when a yard is not found.
-    (set-ids (manx [[%div ~] [[%$ [%$ "404"] ~] ~] ~]))
+    (set-ids (manx sail-404))
   ?:  =(target-url url.i.yards)
     (set-ids (manx (sail.i.yards app-state)))
   $(yards t.yards)
@@ -32,20 +31,20 @@
 ++  gust
   |=  [=gust-action eyreid=@ta current-display-state=manx new-display-state=manx]
   ^-  (list card)
-  %+  make-html-200  eyreid 
+  ?~  c.new-display-state  !!
+  ?~  t.c.new-display-state  !!
+  ?~  c.current-display-state  !!
+  ?~  t.c.current-display-state  !!
+  %+  make-gust-response  eyreid 
   :-  ~
   %-  manx-to-octs:server
   ^-  manx
-  ?~  c.current-display-state  !!
-  ?~  t.c.current-display-state  !!
-  ?~  c.new-display-state  !!
-  ?~  t.c.new-display-state  !!
   ?-  gust-action
-    %route
+    %page
       =.  c.i.c.new-display-state  
         (marl [script-node c.i.c.new-display-state])
       new-display-state
-    %event
+    %update
       ;output
         ;*  %+  gust-algo
           [%manx i.t.c.current-display-state]
@@ -53,19 +52,18 @@
       ==
   ==
 ::
-++  make-html-200
+++  make-gust-response
   |=  [eyreid=@ta resdata=(unit octs)]
   ^-  (list card)
   =/  reshead  
     :-  200
     :~  ['Content-Type' 'text/html']
-        :: ['Content-Length' (crip ((d-co:co 1) ?~(resdata ~ p.resdata)))]
     ==
   %+  give-simple-payload:app:server 
     eyreid 
   ^-(simple-payload:http [reshead resdata])
 ::
-++  make-307
+++  make-auth-redirect
   |=  eyreid=@ta
   ^-  (list card)
   =/  reshead  [307 ['Location' '/~/login?redirect='] ~]
@@ -179,7 +177,7 @@
   $(attributes +.attributes)
 :: :: :: ::
 ::
-::  Script 
+::  Sail 
 ::
 :: :: :: ::
 ++  script-node
@@ -187,6 +185,21 @@
   ;script
     ;+  ;/  script
   ==
+++  sail-404
+  ^-  manx
+  ;html
+    ;head
+      ;meta(charset "utf-8");
+    ==
+    ;body
+      ;span: 404
+    ==
+  ==
+:: :: :: ::
+::
+::  Script 
+::
+:: :: :: ::
 ++  script
   ^~
   %-  trip

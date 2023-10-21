@@ -1,13 +1,12 @@
-/-  test-agent-direct-http
-/=  test-stylesheet  /app/sail/test-stylesheet
-|=  app-state=app.teststate.test-agent-direct-http
+/-  example-agent
+/=  example-stylesheet  /app/sail/example-stylesheet
+|=  app-state=app.example-state.example-agent
 ^-  manx
 ;html
   ;head
-    ;title: test
     ;meta(charset "utf-8");
     ;style
-      ;+  ;/  test-stylesheet
+      ;+  ;/  example-stylesheet
     ==
   ==
   ;body
