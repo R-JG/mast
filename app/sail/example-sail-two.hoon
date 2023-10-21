@@ -1,13 +1,10 @@
 /-  example-agent
-/=  example-stylesheet  /app/sail/example-stylesheet
 |=  app-state=app.example-state.example-agent
 ^-  manx
 ;html
   ;head
     ;meta(charset "utf-8");
-    ;style
-      ;+  ;/  example-stylesheet
-    ==
+    ;link(href "/example-app/css", rel "stylesheet");
   ==
   ;body
     ;main

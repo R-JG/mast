@@ -2,6 +2,7 @@
 /+  default-agent, dbug, agentio, mast
 /=  example-sail  /app/sail/example-sail
 /=  example-sail-two  /app/sail/example-sail-two
+/=  example-stylesheet  /app/sail/example-stylesheet
 |%
 +$  state-0  [%0 example-state:example-agent]
 +$  versioned-state  $%(state-0)
@@ -53,6 +54,9 @@
       [(make-auth-redirect:mast eyreid) state]
     ?+  method.request.req  [(make-400:mast eyreid) state]
       %'GET'
+        :: the css ought to be linked to from the head, and can be handled like this:
+        ?:  =('/example-app/css' url.request.req)
+          [(make-css-response:mast eyreid example-stylesheet) state]
         :: gust %page will serve all routes included in yards, and a 404 if the route isn't found.
         :: you can also handle any particular route before this and just use it as a catch-all.
         =/  rigged-sail  (rig:mast url.request.req yards app.state)

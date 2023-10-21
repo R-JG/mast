@@ -1,5 +1,4 @@
 ^~
-%-  trip
 '''
 body {
   width: 100vw;

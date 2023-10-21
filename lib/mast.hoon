@@ -63,6 +63,14 @@
     eyreid 
   ^-(simple-payload:http [reshead resdata])
 ::
+++  make-css-response
+  |=  [eyreid=@ta css=@t]
+  ^-  (list card)
+  =/  reshead  [200 ['Content-Type' 'text/css'] ~]
+  %+  give-simple-payload:app:server 
+    eyreid 
+  ^-(simple-payload:http [reshead [~ (as-octs:mimes:html css)]])
+::
 ++  make-auth-redirect
   |=  eyreid=@ta
   ^-  (list card)
