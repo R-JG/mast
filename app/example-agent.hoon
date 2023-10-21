@@ -91,6 +91,13 @@
             =/  rigged-sail  (rig:mast yards url.request.req new-app-state)
             :-  (gust:mast %update eyreid display.state rigged-sail)
             state(app new-app-state, display rigged-sail)
+          ::
+          %click-navigate-to-index
+          :: with gust %update, you can navigate to a different route by sending updates instead of a whole page.
+          :: this is done simply whenever the sail is rigged using a different url than whatever is current:
+            =/  rigged-sail  (rig:mast yards '/example-app' app.state)
+            :-  (gust:mast %update eyreid display.state rigged-sail)
+            state(display rigged-sail)
         ==
     ==
   --

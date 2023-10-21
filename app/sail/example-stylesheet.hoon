@@ -16,6 +16,8 @@ main {
 .container {
   display: flex;
   flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 .square {
   height: 10rem;

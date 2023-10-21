@@ -28,6 +28,7 @@
           =data-event  "click-square-one"
           ;+  ;/  color-one.app-state
         ==
+        ;button(data-event "click-navigate-to-index"): Return
       ==
     ==
   ==

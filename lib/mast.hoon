@@ -25,7 +25,8 @@
   ?~  yards
     (set-ids (manx sail-404))
   ?:  =(target-url url.i.yards)
-    (set-ids (manx (sail.i.yards app-state)))
+    =/  rigged-sail  (set-ids (manx (sail.i.yards app-state)))
+    rigged-sail(a.g (mart [[%data-url (trip target-url)] a.g.rigged-sail]))
   $(yards t.yards)
 ::
 ++  gust
@@ -35,17 +36,19 @@
   ?~  t.c.new-display-state  !!
   ?~  c.current-display-state  !!
   ?~  t.c.current-display-state  !!
+  ?~  a.g.new-display-state  !!
   %+  make-html-200  eyreid 
   :-  ~
   %-  manx-to-octs:server
   ^-  manx
   ?-  gust-action
     %page
-      =.  c.i.c.new-display-state  
-        (marl [script-node c.i.c.new-display-state])
-      new-display-state
+      %=  new-display-state
+        c.i.c  (marl [script-node c.i.c.new-display-state])
+      ==
     %update
       ;output
+        =data-url  v.i.a.g.new-display-state
         ;*  %+  gust-algo
           [%manx i.t.c.current-display-state]
         [%manx i.t.c.new-display-state]
@@ -230,6 +233,10 @@
           const htmlData = await response.text();
           let container = document.createElement('template');
           container.innerHTML = htmlData;
+          const navUrl = container.content.firstElementChild.dataset.url;
+          if (navUrl && (navUrl !== window.location.pathname)) {
+              history.pushState({}, '', navUrl);
+          };
           while (container.content.firstElementChild.children.length > 0) {
               let outputChild = container.content.firstElementChild.firstElementChild;
               if (outputChild.tagName === 'OUTPUT') {
