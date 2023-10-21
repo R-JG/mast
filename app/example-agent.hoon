@@ -16,7 +16,8 @@
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
     io    ~(. agentio bowl)
-    :: a list of cells of routes to gates which produce manx are required for rig:mast
+    :: yards, i.e. a list of cells of routes to gates which produce manx, are required for rig:mast.
+    :: these define all of the different pages for your app.
     yards  %-  limo  :~  
         ['/example-app' example-sail]
         ['/example-app/page-two' example-sail-two]
@@ -25,7 +26,7 @@
 ++  on-init
   ^-  (quip card _this)
   :_  this
-  :: binding the base url
+  :: binding the base url:
   [(~(arvo pass:io /bind) %e %connect `/'example-app' %example-agent) ~]
 ++  on-save
   ^-  vase
@@ -54,11 +55,12 @@
       [(make-auth-redirect:mast eyreid) state]
     ?+  method.request.req  [(make-400:mast eyreid) state]
       %'GET'
-        :: the css ought to be linked to from the head, and can be handled like this:
+        :: css ought to be linked to from the head of the sail document, and can be handled like this:
         ?:  =('/example-app/css' url.request.req)
           [(make-css-response:mast eyreid example-stylesheet) state]
         :: gust %page will serve all routes included in yards, and a 404 if the route isn't found.
         :: you could also handle any particular route before this and use gust as a catch-all.
+        :: rig produces new display data which is used for gust and for updating your agent's display state.
         =/  rigged-sail  (rig:mast yards url.request.req app.state)
         :-  (gust:mast %page eyreid display.state rigged-sail)
         state(display rigged-sail)
@@ -69,7 +71,7 @@
         ?~  parsedjson  !!
         :: the body of a post request from mast has the form [tags data].
         :: the tags are what one had defined in the data-event attribute in the sail node which triggered the event.
-        :: the tags are then used to define the event handler in the agent for the particular event request.
+        :: these tags are then used to define the event handler in the agent for the particular event request.
         :: handling the client-sent events:
         ?+  tags.parsedjson  [(make-400:mast eyreid) state]
           %click-square-one
@@ -77,9 +79,8 @@
             =/  newcolor  ?:(=(color-one.app.state "blue") "green" "blue")
             =/  new-app-state  app.state(color-one newcolor)
             :: rig is then used with the updated app state relevant to your sail components.
-            :: this produces the new display data with which the display state in the agent is updated.
-            :: the new display data is also passed into gust.
             :: gust %update produces a response which syncs the browser's display with your agent.
+            :: it produces a minimal amount of html, rather than a whole new page.
             :: implementing rig and gust:
             =/  rigged-sail  (rig:mast yards url.request.req new-app-state)
             :-  (gust:mast %update eyreid display.state rigged-sail)
@@ -107,7 +108,6 @@
   ^-  (quip card _this)
   ?+  path  (on-watch:def path)
     [%http-response *]
-      :: %-  (slog leaf+"Eyre subscribed to {(spud path)}." ~)
       `this
   ==
 ++  on-leave  on-leave:def
