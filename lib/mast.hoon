@@ -21,7 +21,7 @@
   u.jsonunit
 ::
 ++  rig
-  |*  [target-url=@t =yards app-state=*]
+  |*  [=yards target-url=@t app-state=*]
   ?~  yards
     (set-ids (manx sail-404))
   ?:  =(target-url url.i.yards)
@@ -35,7 +35,7 @@
   ?~  t.c.new-display-state  !!
   ?~  c.current-display-state  !!
   ?~  t.c.current-display-state  !!
-  %+  make-gust-response  eyreid 
+  %+  make-html-200  eyreid 
   :-  ~
   %-  manx-to-octs:server
   ^-  manx
@@ -52,13 +52,10 @@
       ==
   ==
 ::
-++  make-gust-response
+++  make-html-200
   |=  [eyreid=@ta resdata=(unit octs)]
   ^-  (list card)
-  =/  reshead  
-    :-  200
-    :~  ['Content-Type' 'text/html']
-    ==
+  =/  reshead  [200 ['Content-Type' 'text/html'] ~]
   %+  give-simple-payload:app:server 
     eyreid 
   ^-(simple-payload:http [reshead resdata])

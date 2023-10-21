@@ -58,8 +58,8 @@
         ?:  =('/example-app/css' url.request.req)
           [(make-css-response:mast eyreid example-stylesheet) state]
         :: gust %page will serve all routes included in yards, and a 404 if the route isn't found.
-        :: you can also handle any particular route before this and just use it as a catch-all.
-        =/  rigged-sail  (rig:mast url.request.req yards app.state)
+        :: you could also handle any particular route before this and use gust as a catch-all.
+        =/  rigged-sail  (rig:mast yards url.request.req app.state)
         :-  (gust:mast %page eyreid display.state rigged-sail)
         state(display rigged-sail)
       ::
@@ -67,21 +67,28 @@
         :: parsing the request:
         =/  parsedjson  (parse:mast req)
         ?~  parsedjson  !!
-        :: handling the client-side events:
+        :: the body of a post request from mast has the form [tags data].
+        :: the tags are what one had defined in the data-event attribute in the sail node which triggered the event.
+        :: the tags are then used to define the event handler in the agent for the particular event request.
+        :: handling the client-sent events:
         ?+  tags.parsedjson  [(make-400:mast eyreid) state]
           %click-square-one
+            :: updating app state:
             =/  newcolor  ?:(=(color-one.app.state "blue") "green" "blue")
             =/  new-app-state  app.state(color-one newcolor)
+            :: rig is then used with the updated app state relevant to your sail components.
+            :: this produces the new display data with which the display state in the agent is updated.
+            :: the new display data is also passed into gust.
+            :: gust %update produces a response which syncs the browser's display with your agent.
             :: implementing rig and gust:
-            =/  rigged-sail  (rig:mast url.request.req yards new-app-state)
+            =/  rigged-sail  (rig:mast yards url.request.req new-app-state)
             :-  (gust:mast %update eyreid display.state rigged-sail)
             state(app new-app-state, display rigged-sail)
           ::
           %click-square-two
             =/  newcolor  ?:(=(color-two.app.state "red") "pink" "red")
             =/  new-app-state  app.state(color-two newcolor)
-            :: implementing rig and gust:
-            =/  rigged-sail  (rig:mast url.request.req yards new-app-state)
+            =/  rigged-sail  (rig:mast yards url.request.req new-app-state)
             :-  (gust:mast %update eyreid display.state rigged-sail)
             state(app new-app-state, display rigged-sail)
         ==
