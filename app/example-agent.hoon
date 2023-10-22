@@ -16,7 +16,8 @@
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
     io    ~(. agentio bowl)
-    :: yards, i.e. a list of cells of routes to gates which produce manx, are required for rig:mast.
+    :: yards, i.e. a list of cells of routes to sail components, are required for rig:mast.
+    :: see the example sail component for more information.
     :: these define all of the different pages for your app.
     yards  %-  limo  :~  
         ['/example-app' example-sail]
@@ -99,6 +100,12 @@
             =/  rigged-sail  (rig:mast yards '/example-app' app.state)
             :-  (gust:mast %update eyreid display.state rigged-sail)
             state(display rigged-sail)
+          ::
+          %click-test-form
+            ~&  'data'
+            ~&  data.parsedjson
+            :-  (make-html-200:mast eyreid ~)
+            state
         ==
     ==
   --

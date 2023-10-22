@@ -218,19 +218,58 @@
   });
   function setEventListeners(el) {
       if (el.dataset.event.startsWith('click')) {
-          el.addEventListener('click',() => urbitClick(el.dataset.event));
+          el.addEventListener('click',(e) => urbitClick(e, el.dataset.event, el.dataset.return));
+      } else {
+          console.error(`The event for tag: ${el.dataset.event} does not exist or is unsupported`);
       };
   };
-  async function urbitClick(tagString) {
+  async function urbitClick(event, tagString, dataString) {
       try {
+          let data = [];
+          if (dataString) {
+              const dataToReturn = dataString.split(/\s+/);
+              dataToReturn.forEach(dataTag => {
+                  const [kind, key] = dataTag.split(/-(.*)/, 2);
+                  if (kind === 'event') {
+                      if (!(key in event)) {
+                          console.error(`Property: ${key} does not exist on the event object`);
+                          return;
+                      };
+                      data.push([dataTag, String(event[key])]);
+                  } else if (kind === 'target') {
+                      if (!(key in event.currentTarget)) {
+                          console.error(`Property: ${key} does not exist on the target object`);
+                          return;
+                      };
+                      data.push([dataTag, String(event.currentTarget[key])]);
+                  } else if (kind.startsWith('#')) {
+                      const splitTag = dataTag.slice(1).split('-');
+                      const keyWithDashCheck = splitTag.pop();
+                      const elementId = splitTag.join('-');
+                      const linkedEl = document.getElementById(elementId);
+                      if (!linkedEl) {
+                          console.error(`No element found for id: ${kind}`);
+                          return;
+                      };
+                      if (!(keyWithDashCheck in linkedEl)) {
+                          console.error(`Property: ${keyWithDashCheck} does not exist on the object with id: ${kind}`);
+                          return;
+                      };
+                      data.push([dataTag, String(linkedEl[keyWithDashCheck])]);
+                  } else {
+                      console.error(`Invalid return data tag: ${dataTag}`);
+                  };
+              });
+          };
           const response = await fetch(window.location.href, {
               method: 'POST',
               body: JSON.stringify({
                   tags: tagString,
-                  data: []
+                  data
               })
           });
           const htmlData = await response.text();
+          if (!htmlData) return;
           let container = document.createElement('template');
           container.innerHTML = htmlData;
           const navUrl = container.content.firstElementChild.dataset.url;

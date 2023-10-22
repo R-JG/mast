@@ -1,6 +1,6 @@
-:: this is a root-level sail component, meant to be collected into yards to be used with rig.
+:: this is a root-level sail component, meant to be collected into yards to be used with rig in the agent.
 :: there are a few features necessary for a root-level sail component in order for it to work with mast:
-:: 1) sail components need to be gates which produce manx.
+:: 1) they need to be gates which produce manx.
 :: 2) they must be a complete document with html, head, and body tags.
 :: 3) all root-level sail components ought to have the same sample.
 :: the sample can be any noun representing the application state, used to dynamically generate content within the component.
@@ -53,6 +53,13 @@
         ;+  ?:  =(color-two.app-state "red")
           ;div.circle;
         ;div;
+      ==
+      ;input#first-input;
+      ;input#second-input;
+      ;button
+        =data-event  "click-test-form"
+        =data-return  "#first-input-value #second-input-value"
+        Submit
       ==
     ==
   ==
