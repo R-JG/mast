@@ -54,13 +54,6 @@
           ;div.circle;
         ;div;
       ==
-      ;input#first-input;
-      ;input#second-input;
-      ;button
-        =data-event  "click-test-form"
-        =data-return  "#first-input-value #second-input-value"
-        Submit
-      ==
     ==
   ==
 ==

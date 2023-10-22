@@ -101,11 +101,6 @@
             :-  (gust:mast %update eyreid display.state rigged-sail)
             state(display rigged-sail)
           ::
-          %click-test-form
-            ~&  'data'
-            ~&  data.parsedjson
-            :-  (make-html-200:mast eyreid ~)
-            state
         ==
     ==
   --

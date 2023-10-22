@@ -217,13 +217,10 @@
       eventElements.forEach(el => setEventListeners(el));
   });
   function setEventListeners(el) {
-      if (el.dataset.event.startsWith('click')) {
-          el.addEventListener('click',(e) => urbitClick(e, el.dataset.event, el.dataset.return));
-      } else {
-          console.error(`The event for tag: ${el.dataset.event} does not exist or is unsupported`);
-      };
+      const eventType = el.dataset.event.split('-', 1)[0];
+      el.addEventListener(eventType, (e) => urbitEvent(e, el.dataset.event, el.dataset.return));
   };
-  async function urbitClick(event, tagString, dataString) {
+  async function urbitEvent(event, tagString, dataString) {
       try {
           let data = [];
           if (dataString) {
