@@ -34,11 +34,13 @@
         ;div
           =class  (weld "square " color-one.app-state)
           =data-event  "click-square-one"
+          =data-return  "target-textContent"
           ;+  ;/  color-one.app-state
         ==
         ;div
           =class  (weld "square " color-two.app-state)
           =data-event  "click-square-two"
+          =data-return  "target-textContent"
           ;+  ;/  color-two.app-state
         ==
       ==
@@ -54,6 +56,9 @@
           ;div.circle;
         ;div;
       ==
+      ;input#first-input;
+      ;button(data-event "click-test-form-submit", data-return "#first-input-value"): submit
+      ;button(data-event "click-navigate-to-page-two"): navigate
     ==
   ==
 ==

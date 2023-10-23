@@ -3,22 +3,39 @@
 +$  yard  [url=@t sail=gate]
 +$  yards  (list yard)
 +$  parsed-request  [tags=@tas data=(list [@t @t])]
-+$  gust-action  ?(%page %update)
 +$  gust-sample  $%([%manx manx] [%marl marl])
-+$  card  card:agent:gall
 :: :: :: ::
 ::
 ::  Server 
 ::
 :: :: :: ::
+++  plank
+  :: make sample types their typical molds and add conversion to tapes in the arm
+  |=  [eyre-id=@ta ship-name=tape app-name=tape display-update-path=tape display-state=manx]
+  ^-  (list card:agent:gall)
+  %+  make-direct-http-cards  eyre-id
+  ?~  c.display-state  !!
+  :-  ~
+  %-  manx-to-octs:server
+  ^-  manx
+  %=  display-state
+    a.g    (mart [[%data-ship ship-name] [%data-app app-name] [%data-path display-update-path] a.g.display-state])
+    c.i.c  (marl [script-node c.i.c.display-state])
+  ==
+::
+:: ++  parse
+::   |=  req=inbound-request:eyre
+::   ^-  ?(~ parsed-request)
+::   =/  jsonunit  (de:json:html +.+.body.request.req)
+::   ?~  jsonunit
+::     ~
+::   %-  (ot ~[tags+so data+(ar (at ~[so so]))]):dejs:format
+::   u.jsonunit
+::
 ++  parse
-  |=  req=inbound-request:eyre
-  ^-  ?(~ parsed-request)
-  =/  jsonunit  (de:json:html +.+.body.request.req)
-  ?~  jsonunit
-    ~
-  %-  (ot ~[tags+so data+(ar (at ~[so so]))]):dejs:format
-  u.jsonunit
+  |=  j=json
+  ^-  parsed-request
+  %-  (ot ~[tags+so data+(ar (at ~[so so]))]):dejs:format  j
 ::
 ++  rig
   |*  [=yards target-url=@t app-state=*]
@@ -30,67 +47,76 @@
   $(yards t.yards)
 ::
 ++  gust
-  |=  [=gust-action eyreid=@ta current-display-state=manx new-display-state=manx]
-  ^-  (list card)
+  |=  [display-update-path=path current-display-state=manx new-display-state=manx]
+  ^-  (list card:agent:gall)
   ?~  c.new-display-state  !!
   ?~  t.c.new-display-state  !!
   ?~  c.current-display-state  !!
   ?~  t.c.current-display-state  !!
   ?~  a.g.new-display-state  !!
-  %+  make-html-200  eyreid 
-  :-  ~
-  %-  manx-to-octs:server
+  %+  make-channel-update-cards  display-update-path
+  %-  en-xml:html
   ^-  manx
-  ?-  gust-action
-    %page
-      %=  new-display-state
-        c.i.c  (marl [script-node c.i.c.new-display-state])
-      ==
-    %update
-      ;output
-        =data-url  v.i.a.g.new-display-state
-        ;*  %+  gust-algo
-          [%manx i.t.c.current-display-state]
-        [%manx i.t.c.new-display-state]
-      ==
+  ;output
+    =data-url  v.i.a.g.new-display-state
+    ;*  %+  gust-algo
+      [%manx i.t.c.current-display-state]
+    [%manx i.t.c.new-display-state]
   ==
 ::
+++  make-direct-http-cards
+  |=  [eyre-id=@ta resdata=(unit octs)]
+  ^-  (list card:agent:gall)
+  =/  reshead  (response-header.simple-payload:http [200 ['Content-Type' 'text/html'] ~])
+  =/  header-cage  [%http-response-header !>(reshead)]
+  =/  data-cage  [%http-response-data !>(resdata)]
+  :~  [%give %fact ~[/http-response/[eyre-id]] header-cage]
+      [%give %fact ~[/http-response/[eyre-id]] data-cage]
+      [%give %kick ~[/http-response/[eyre-id]] ~]
+  ==
+::
+++  make-channel-update-cards
+  |=  [sub-path=path html-data=tape]
+  ^-  (list card:agent:gall)
+  =/  data-cage  [%json !>((tape:enjs:format html-data))]
+  [[%give %fact ~[sub-path] data-cage] ~]
+::
 ++  make-html-200
-  |=  [eyreid=@ta resdata=(unit octs)]
-  ^-  (list card)
+  |=  [eyre-id=@ta resdata=(unit octs)]
+  ^-  (list card:agent:gall)
   =/  reshead  [200 ['Content-Type' 'text/html'] ~]
   %+  give-simple-payload:app:server 
-    eyreid 
+    eyre-id 
   ^-(simple-payload:http [reshead resdata])
 ::
 ++  make-css-response
-  |=  [eyreid=@ta css=@t]
-  ^-  (list card)
+  |=  [eyre-id=@ta css=@t]
+  ^-  (list card:agent:gall)
   =/  reshead  [200 ['Content-Type' 'text/css'] ~]
   %+  give-simple-payload:app:server 
-    eyreid 
+    eyre-id 
   ^-(simple-payload:http [reshead [~ (as-octs:mimes:html css)]])
 ::
 ++  make-auth-redirect
-  |=  eyreid=@ta
-  ^-  (list card)
+  |=  eyre-id=@ta
+  ^-  (list card:agent:gall)
   =/  reshead  [307 ['Location' '/~/login?redirect='] ~]
   %+  give-simple-payload:app:server 
-    eyreid 
+    eyre-id 
   ^-(simple-payload:http [reshead ~])
 ::
 ++  make-400
-  |=  eyreid=@ta
-  ^-  (list card)
+  |=  eyre-id=@ta
+  ^-  (list card:agent:gall)
   %+  give-simple-payload:app:server
-    eyreid 
+    eyre-id 
   ^-(simple-payload:http [[400 ~] ~])
 ::
 ++  make-404
-  |=  [eyreid=@ta resdata=(unit octs)]
-  ^-  (list card)
+  |=  [eyre-id=@ta resdata=(unit octs)]
+  ^-  (list card:agent:gall)
   %+  give-simple-payload:app:server
-    eyreid 
+    eyre-id 
   ^-(simple-payload:http [[404 ~] resdata])
 :: :: :: ::
 ::
@@ -212,15 +238,39 @@
   ^~
   %-  trip
   '''
-  addEventListener('DOMContentLoaded', () => {
+  let ship;
+  let app;
+  let displayUpdatePath;
+  let channelMessageId = 0;
+  let eventSource;
+  const channelId = `${Date.now()}${Math.floor(Math.random() * 100)}`
+  const channelPath = `${window.location.origin}/~/channel/${channelId}`;
+  addEventListener('DOMContentLoaded', async () => {
+      ship = document.documentElement.dataset.ship;
+      app = document.documentElement.dataset.app;
+      displayUpdatePath = document.documentElement.dataset.path;
+      await connectToShip();
       let eventElements = document.querySelectorAll('[data-event]');
       eventElements.forEach(el => setEventListeners(el));
   });
+  async function connectToShip() {
+      try {
+          const body = JSON.stringify(makeSubscribeBody());
+          await fetch(channelPath, { 
+              method: 'PUT',
+              body
+          });
+          eventSource = new EventSource(channelPath);
+          eventSource.addEventListener('message', handleChannelStream);
+      } catch (error) {
+          console.error(error);
+      };
+  };
   function setEventListeners(el) {
       const eventType = el.dataset.event.split('-', 1)[0];
-      el.addEventListener(eventType, (e) => urbitEvent(e, el.dataset.event, el.dataset.return));
+      el.addEventListener(eventType, (e) => pokeShip(e, el.dataset.event, el.dataset.return));
   };
-  async function urbitEvent(event, tagString, dataString) {
+  function pokeShip(event, tagString, dataString) {
       try {
           let data = [];
           if (dataString) {
@@ -258,17 +308,30 @@
                   };
               });
           };
-          const response = await fetch(window.location.href, {
-              method: 'POST',
-              body: JSON.stringify({
+          fetch(channelPath, {
+              method: 'PUT',
+              body: JSON.stringify(makePokeBody({
                   tags: tagString,
                   data
-              })
+              }))
           });
-          const htmlData = await response.text();
+      } catch (error) {
+          console.error(error);
+      };
+  };
+  function handleChannelStream(event) {
+      try {
+          const streamResponse = JSON.parse(event.data);
+          if (streamResponse.response !== 'diff') return;
+          fetch(channelPath, {
+              method: 'PUT',
+              body: JSON.stringify(makeAck(streamResponse.id))
+          });
+          const htmlData = streamResponse.json;
           if (!htmlData) return;
           let container = document.createElement('template');
           container.innerHTML = htmlData;
+          if (container.content.firstElementChild.childNodes.length === 0) return;
           const navUrl = container.content.firstElementChild.dataset.url;
           if (navUrl && (navUrl !== window.location.pathname)) {
               history.pushState({}, '', navUrl);
@@ -321,6 +384,35 @@
       } catch (error) {
           console.error(error);
       };
+  };
+  function makeSubscribeBody() {
+      channelMessageId++;
+      return [{
+          id: channelMessageId,
+          action: 'subscribe',
+          ship: ship,
+          app: app,
+          path: displayUpdatePath
+      }];
+  };
+  function makePokeBody(jsonData) {
+      channelMessageId++;
+      return [{
+          id: channelMessageId,
+          action: 'poke',
+          ship: ship,
+          app: app,
+          mark: 'json',
+          json: jsonData
+      }];
+  };
+  function makeAck(eventId) {
+      channelMessageId++;
+      return [{
+          id: channelMessageId,
+          action: 'ack',
+          "event-id": eventId
+      }];
   };
   '''
 --
