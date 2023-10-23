@@ -43,6 +43,8 @@
   ?>  =(our.bowl src.bowl)
   =^  cards  state
     ?+  mark  (on-poke:def mark vase)
+      :: at the moment, mast involves a combination of direct http and the channel system.
+      :: (the pokes from the client just have a json mark for now which can be parsed with the library; I will change this.)
       %handle-http-request
         (handle-http-request !<([@ta inbound-request:eyre] vase))
       %json
@@ -61,88 +63,60 @@
         :: css ought to be linked to from the head of the sail document, and can be handled like this:
         ?:  =('/example-app/css' url.request.req)
           [(make-css-response:mast eyre-id example-stylesheet) state]
-        :: rig produces new display data which is used for gust and for updating your agent's display state.
+        :: rig produces new display data which is used for plank, gust, and for updating your agent's display state.
         =/  rigged-sail  (rig:mast yards url.request.req app.state)
+        :: plank is the endpoint that the client will hit first when loading the app via the url.
+        :: it serves any of the pages in yards according to the request url (and otherwise a 404 page).
+        :: plank inserts the library's script into your sail component to set up all of the client side functionality.
         :-  (plank:mast eyre-id "zod" "example-agent" "/display-updates" rigged-sail)
-        state(display rigged-sail)
-      ::
-::      %'POST'
-::        :: parsing the request:
-::        =/  parsedjson  (parse:mast req)
-::        ?~  parsedjson  !!
-::        :: the body of a post request from mast has the form [tags data].
-::        :: the tags are what one had defined in the data-event attribute in the sail node which triggered the event.
-::        :: these tags are then used to define the event handler in the agent for the particular event request.
-::        :: handling the client-sent events:
-::        ?+  tags.parsedjson  [(make-400:mast eyre-id) state]
-::          %click-square-one
-::            :: updating app state:
-::            =/  newcolor  ?:(=(color-one.app.state "blue") "green" "blue")
-::            =/  new-app-state  app.state(color-one newcolor)
-::            :: rig is then used with the updated app state relevant to your sail components.
-::            :: gust %update produces a response which syncs the browser's display with your agent.
-::            :: it produces a minimal amount of html, rather than a whole new page.
-::            :: implementing rig and gust:
-::            =/  rigged-sail  (rig:mast yards url.request.req new-app-state)
-::            
-::            :: NEW GUST
-::            :-  (gust:mast /display-updates display.state rigged-sail)
-::            state(app new-app-state, display rigged-sail)
-::          ::
-::          %click-square-two
-::            =/  newcolor  ?:(=(color-two.app.state "red") "pink" "red")
-::            =/  new-app-state  app.state(color-two newcolor)
-::            =/  rigged-sail  (rig:mast yards url.request.req new-app-state)
-::
-::            :: :-  (gust:mast %update eyre-id display.state rigged-sail)
-::            :: just respond...
-::            :-  (make-html-200:mast eyre-id ~)
-::            state(app new-app-state, display rigged-sail)
-::          ::
-::          %click-navigate-to-index
-::          :: with gust %update, you can navigate to a different route by sending updates instead of a whole page.
-::          :: this is done simply whenever the sail is rigged using a different url than whatever is current:
-::            =/  rigged-sail  (rig:mast yards '/example-app' app.state)
-::            
-::            :: :-  (gust:mast %update eyre-id display.state rigged-sail)
-::            :: just respond...
-::            :-  (make-html-200:mast eyre-id ~)
-::            state(display rigged-sail)
-::          ::
-::        ==
+        :: state is then set with the new display and current url:
+        state(display rigged-sail, current-url url.request.req)
     ==
   ++  handle-json-request
     |=  json-request=json
     ^-  (quip card _state)
     =/  client-poke  (parse:mast json-request)
-    ?~  a.g.display.state  !!
-    =/  url-state  (crip v.i.a.g.display.state)
+    :: a client poke from mast has the form [tags data].
+    :: the tags are what one had defined in the data-event attribute in the sail node which triggered the event.
+    :: these tags are then used to define the event handler in the agent for the particular event request.
     ?+  tags.client-poke  !!
       %click-square-one
+        :: the data in a client poke consists in a list of any of the existent values specified in the data-return attribute in the sail node.
+        :: you can return any property from: 
+        :: 1) the event object
+        :: 2) the element on which the event was triggered
+        :: 3) any other element at all by id (this is how forms are implemented).
         ~&  data.client-poke
         =/  newcolor  ?:(=(color-one.app.state "blue") "green" "blue")
         =/  new-app-state  app.state(color-one newcolor)
-        =/  rigged-sail  (rig:mast yards url-state new-app-state)
+        :: when rig is used with updated app state it will produce changes in the display according to the logic of your sail component.
+        =/  rigged-sail  (rig:mast yards current-url.state new-app-state)
+        :: gust then produces a response with html to sync the browser's display with your agent.
+        :: the response contains a minimal amount of html to achive the new display state, rather than a whole new page.
         :-  (gust:mast /display-updates display.state rigged-sail)
         state(app new-app-state, display rigged-sail)
       %click-square-two
         ~&  data.client-poke
         =/  newcolor  ?:(=(color-two.app.state "red") "pink" "red")
         =/  new-app-state  app.state(color-two newcolor)
-        =/  rigged-sail  (rig:mast yards url-state new-app-state)
+        =/  rigged-sail  (rig:mast yards current-url.state new-app-state)
         :-  (gust:mast /display-updates display.state rigged-sail)
         state(app new-app-state, display rigged-sail)
       %click-test-form-submit
         ~&  data.client-poke
         `state
       %click-navigate-to-index
-        =/  rigged-sail  (rig:mast yards '/example-app' app.state)
+        :: with gust, you can navigate to a different route by sending a minimal set of updates instead of a whole page.
+        :: this is done simply whenever the sail is rigged using a different url relative to whatever is current:
+        =/  new-url  '/example-app'
+        =/  rigged-sail  (rig:mast yards new-url app.state)
         :-  (gust:mast /display-updates display.state rigged-sail)
-        state(display rigged-sail)
+        state(display rigged-sail, current-url new-url)
       %click-navigate-to-page-two
-        =/  rigged-sail  (rig:mast yards '/example-app/page-two' app.state)
+        =/  new-url  '/example-app/page-two'
+        =/  rigged-sail  (rig:mast yards new-url app.state)
         :-  (gust:mast /display-updates display.state rigged-sail)
-        state(display rigged-sail)
+        state(display rigged-sail, current-url new-url)
     ==
   --
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 

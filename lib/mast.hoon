@@ -10,7 +10,7 @@
 ::
 :: :: :: ::
 ++  plank
-  :: make sample types their typical molds and add conversion to tapes in the arm
+  :: to do: make sample types their typical molds and add conversion to tapes in the arm
   |=  [eyre-id=@ta ship-name=tape app-name=tape display-update-path=tape display-state=manx]
   ^-  (list card:agent:gall)
   %+  make-direct-http-cards  eyre-id
@@ -22,15 +22,6 @@
     a.g    (mart [[%data-ship ship-name] [%data-app app-name] [%data-path display-update-path] a.g.display-state])
     c.i.c  (marl [script-node c.i.c.display-state])
   ==
-::
-:: ++  parse
-::   |=  req=inbound-request:eyre
-::   ^-  ?(~ parsed-request)
-::   =/  jsonunit  (de:json:html +.+.body.request.req)
-::   ?~  jsonunit
-::     ~
-::   %-  (ot ~[tags+so data+(ar (at ~[so so]))]):dejs:format
-::   u.jsonunit
 ::
 ++  parse
   |=  j=json
