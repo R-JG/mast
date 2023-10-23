@@ -1,6 +1,6 @@
 # mast
 
-> A library for building fully dynamic sail front-ends
+A library for building fully dynamic sail front-ends
 
 [![N|Solid](https://freepages.rootsweb.com/~pbtyc/genealogy/B_S_M/Images/Sailing_Steam_Ship_With_Sails_Red.jpg)](https://nodesource.com/products/nsolid)
 
@@ -14,6 +14,7 @@ Additionally, in your sail components, you may add data tags on elements specify
 
 Display updates do not need to be in response to an event from the client, though. Your ship can stream updates to the browser as an effect of any state change in the agent.
 
+Check out the example app for more details.
 
 ***
 License: MIT
