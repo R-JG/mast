@@ -1,7 +1,7 @@
 :: this is a root-level sail component, meant to be collected into yards to be used with rig in the agent.
 :: there are a few features necessary for a root-level sail component in order for it to work with mast:
-:: 1) they need to be gates which produce manx.
-:: 2) they must produce a complete document with html, head, and body tags.
+:: 1) it needs to be a gate which produces manx.
+:: 2) it must produce a complete document with html, head, and body tags.
 :: 3) currently, all root-level sail components need to have the same sample.
 :: the sample can be any noun representing the application state, used to dynamically generate content within the component.
 :: in any other piece of sail included under a root-level one, there are no restrictions on how they need to be written.
@@ -33,13 +33,13 @@
       ;div.container
         ;div
           =class  (weld "square " color-one.app-state)
-          :: this attribute is where event listeners are specified.
+          :: the data-event attribute is where event listeners are specified.
           :: the first word of the tag must correspond to the name of the event listener, minus the "on" prefix.
           :: the listener essentially just sends a poke to your agent with some data.
           :: this tag is then used in your agent to identify the handler for the event poke.
           =data-event  "click-square-one"
-          :: the next attribute is for specifying what data to return from the event.
-          :: a number of tags may be specified, separated by whitespace; words inside are connected by hyphens.
+          :: the data-return attribute is for specifying what data to return from the event.
+          :: a number of tags may be specified, separated by whitespace; words are connected by hyphens.
           :: there are three options for the first word in the tag: 
           :: 1) "target", for the current target, i.e. the element on which the event was triggered.
           :: 2) "event", for the event object.
