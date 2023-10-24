@@ -1,4 +1,3 @@
-/+  server
 |%
 +$  yard  [url=@t sail=gate]
 +$  yards  (list yard)
@@ -10,16 +9,23 @@
 ::
 :: :: :: ::
 ++  plank
-  :: to do: make sample types their typical molds and add conversion to tapes in the arm
-  |=  [eyre-id=@ta ship-name=tape app-name=tape display-update-path=tape display-state=manx]
+  |=  [eyre-id=@ta ship=@p app-name=tape display-update-path=tape display-state=manx]
   ^-  (list card:agent:gall)
-  %+  make-direct-http-cards  eyre-id
   ?~  c.display-state  !!
+  =/  ship-name  (scow %p ship)
+  %^  make-direct-http-cards  eyre-id
+    [200 ['Content-Type' 'text/html'] ~]
   :-  ~
-  %-  manx-to-octs:server
+  ^-  octs
+  %-  as-octt:mimes:html
+  %-  en-xml:html
   ^-  manx
   %=  display-state
-    a.g    (mart [[%data-ship ship-name] [%data-app app-name] [%data-path display-update-path] a.g.display-state])
+    a.g  %-  mart  :^  
+      [%data-ship +.ship-name] 
+      [%data-app app-name] 
+      [%data-path display-update-path] 
+      a.g.display-state
     c.i.c  (marl [script-node c.i.c.display-state])
   ==
 ::
@@ -56,9 +62,8 @@
   ==
 ::
 ++  make-direct-http-cards
-  |=  [eyre-id=@ta resdata=(unit octs)]
+  |=  [eyre-id=@ta reshead=response-header.simple-payload:http resdata=(unit octs)]
   ^-  (list card:agent:gall)
-  =/  reshead  (response-header.simple-payload:http [200 ['Content-Type' 'text/html'] ~])
   =/  header-cage  [%http-response-header !>(reshead)]
   =/  data-cage  [%http-response-data !>(resdata)]
   :~  [%give %fact ~[/http-response/[eyre-id]] header-cage]
@@ -72,43 +77,33 @@
   =/  data-cage  [%json !>((tape:enjs:format html-data))]
   [[%give %fact ~[sub-path] data-cage] ~]
 ::
-++  make-html-200
-  |=  [eyre-id=@ta resdata=(unit octs)]
-  ^-  (list card:agent:gall)
-  =/  reshead  [200 ['Content-Type' 'text/html'] ~]
-  %+  give-simple-payload:app:server 
-    eyre-id 
-  ^-(simple-payload:http [reshead resdata])
-::
 ++  make-css-response
   |=  [eyre-id=@ta css=@t]
   ^-  (list card:agent:gall)
-  =/  reshead  [200 ['Content-Type' 'text/css'] ~]
-  %+  give-simple-payload:app:server 
-    eyre-id 
-  ^-(simple-payload:http [reshead [~ (as-octs:mimes:html css)]])
+  %^  make-direct-http-cards  eyre-id 
+    [200 ['Content-Type' 'text/css'] ~]
+  [~ (as-octs:mimes:html css)]
 ::
 ++  make-auth-redirect
   |=  eyre-id=@ta
   ^-  (list card:agent:gall)
-  =/  reshead  [307 ['Location' '/~/login?redirect='] ~]
-  %+  give-simple-payload:app:server 
-    eyre-id 
-  ^-(simple-payload:http [reshead ~])
+  %^  make-direct-http-cards  eyre-id
+    [307 ['Location' '/~/login?redirect='] ~]
+  ~
 ::
 ++  make-400
   |=  eyre-id=@ta
   ^-  (list card:agent:gall)
-  %+  give-simple-payload:app:server
-    eyre-id 
-  ^-(simple-payload:http [[400 ~] ~])
+  %^  make-direct-http-cards  eyre-id 
+    [400 ~]
+  ~
 ::
 ++  make-404
   |=  [eyre-id=@ta resdata=(unit octs)]
   ^-  (list card:agent:gall)
-  %+  give-simple-payload:app:server
-    eyre-id 
-  ^-(simple-payload:http [[404 ~] resdata])
+  %^  make-direct-http-cards  eyre-id
+    [404 ~]
+  resdata
 :: :: :: ::
 ::
 :: Algorithms

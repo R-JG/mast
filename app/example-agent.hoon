@@ -68,7 +68,7 @@
         :: plank is the endpoint that the client will hit first when loading the app via the url.
         :: it serves any of the pages in yards according to the request url (and otherwise a 404 page).
         :: plank inserts the library's script into your sail component to set up all of the client side functionality.
-        :-  (plank:mast eyre-id "zod" "example-agent" "/display-updates" rigged-sail)
+        :-  (plank:mast eyre-id our.bowl "example-agent" "/display-updates" rigged-sail)
         :: state is then set with the new display and current url:
         state(display rigged-sail, current-url url.request.req)
     ==
