@@ -1,7 +1,7 @@
 |%
 +$  yard  [url=@t sail=gate]
 +$  yards  (list yard)
-+$  parsed-request  [tags=@tas data=(list [@t @t])]
++$  parsed-request  [tags=@tas data=(map @t @t)]
 +$  gust-sample  $%([%manx manx] [%marl marl])
 :: :: :: ::
 ::
@@ -32,7 +32,7 @@
 ++  parse
   |=  j=json
   ^-  parsed-request
-  %-  (ot ~[tags+so data+(ar (at ~[so so]))]):dejs:format  j
+  %-  (ot ~[tags+so data+(om so)]):dejs:format  j
 ::
 ++  rig
   |*  [=yards target-url=@t app-state=*]
@@ -239,6 +239,10 @@
       let eventElements = document.querySelectorAll('[data-event]');
       eventElements.forEach(el => setEventListeners(el));
   });
+  function setEventListeners(el) {
+      const eventType = el.dataset.event.split('-', 1)[0];
+      el.addEventListener(eventType, (e) => pokeShip(e, el.dataset.event, el.dataset.return));
+  };
   async function connectToShip() {
       try {
           const body = JSON.stringify(makeSubscribeBody());
@@ -252,13 +256,9 @@
           console.error(error);
       };
   };
-  function setEventListeners(el) {
-      const eventType = el.dataset.event.split('-', 1)[0];
-      el.addEventListener(eventType, (e) => pokeShip(e, el.dataset.event, el.dataset.return));
-  };
   function pokeShip(event, tagString, dataString) {
       try {
-          let data = [];
+          let data = {};
           if (dataString) {
               const dataToReturn = dataString.split(/\s+/);
               dataToReturn.forEach(dataTag => {
@@ -268,13 +268,13 @@
                           console.error(`Property: ${key} does not exist on the event object`);
                           return;
                       };
-                      data.push([dataTag, String(event[key])]);
+                      data[dataTag] = String(event[key]);
                   } else if (kind === 'target') {
                       if (!(key in event.currentTarget)) {
                           console.error(`Property: ${key} does not exist on the target object`);
                           return;
                       };
-                      data.push([dataTag, String(event.currentTarget[key])]);
+                      data[dataTag] = String(event.currentTarget[key]);
                   } else if (kind.startsWith('#')) {
                       const splitTag = dataTag.slice(1).split('-');
                       const keyWithDashCheck = splitTag.pop();
@@ -288,7 +288,7 @@
                           console.error(`Property: ${keyWithDashCheck} does not exist on the object with id: ${kind}`);
                           return;
                       };
-                      data.push([dataTag, String(linkedEl[keyWithDashCheck])]);
+                      data[dataTag] = String(linkedEl[keyWithDashCheck]);
                   } else {
                       console.error(`Invalid return data tag: ${dataTag}`);
                   };

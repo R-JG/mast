@@ -81,7 +81,7 @@
     :: these tags are then used to define the event handler in the agent for the particular event request.
     ?+  tags.client-poke  !!
       %click-square-one
-        :: the data in a client poke consists in a list of any of the existent values specified in the data-return attribute in the sail node.
+        :: the data in a client poke consists in a map of the existent values specified in the data-return attribute in the sail node.
         :: you can return any property from: 
         :: 1) the event object
         :: 2) the element on which the event was triggered
@@ -103,7 +103,7 @@
         :-  (gust:mast /display-updates display.state rigged-sail)
         state(app new-app-state, display rigged-sail)
       %click-test-form-submit
-        ~&  data.client-poke
+        ~&  (~(get by data.client-poke) '#first-input-value')
         `state
       %click-navigate-to-index
         :: with gust, you can navigate to a different route by sending a minimal set of updates instead of a whole page.
