@@ -1,7 +1,7 @@
 |%
 +$  yard  [url=@t sail=gate]
 +$  yards  (list yard)
-+$  parsed-request  [tags=@tas data=(map @t @t)]
++$  parsed-request  [tags=path data=(map @t @t)]
 +$  gust-sample  $%([%manx manx] [%marl marl])
 :: :: :: ::
 ::
@@ -32,7 +32,7 @@
 ++  parse
   |=  j=json
   ^-  parsed-request
-  %-  (ot ~[tags+so data+(om so)]):dejs:format  j
+  %-  (ot ~[tags+pa data+(om so)]):dejs:format  j
 ::
 ++  rig
   |*  [=yards target-url=@t app-state=*]
@@ -240,7 +240,7 @@
       eventElements.forEach(el => setEventListeners(el));
   });
   function setEventListeners(el) {
-      const eventType = el.dataset.event.split('-', 1)[0];
+      const eventType = el.dataset.event.split('/', 2)[1];
       el.addEventListener(eventType, (e) => pokeShip(e, el.dataset.event, el.dataset.return));
   };
   async function connectToShip() {
@@ -262,7 +262,10 @@
           if (dataString) {
               const dataToReturn = dataString.split(/\s+/);
               dataToReturn.forEach(dataTag => {
-                  const [kind, key] = dataTag.split(/-(.*)/, 2);
+                  let splitDataTag = dataTag.split('/');
+                  if (splitDataTag[0] === '') splitDataTag.shift();
+                  const kind = splitDataTag[0];
+                  const key = splitDataTag.pop();
                   if (kind === 'event') {
                       if (!(key in event)) {
                           console.error(`Property: ${key} does not exist on the event object`);
@@ -275,22 +278,18 @@
                           return;
                       };
                       data[dataTag] = String(event.currentTarget[key]);
-                  } else if (kind.startsWith('#')) {
-                      const splitTag = dataTag.slice(1).split('-');
-                      const keyWithDashCheck = splitTag.pop();
-                      const elementId = splitTag.join('-');
+                  } else {
+                      const elementId = splitDataTag.join('/');
                       const linkedEl = document.getElementById(elementId);
                       if (!linkedEl) {
                           console.error(`No element found for id: ${kind}`);
                           return;
                       };
-                      if (!(keyWithDashCheck in linkedEl)) {
-                          console.error(`Property: ${keyWithDashCheck} does not exist on the object with id: ${kind}`);
+                      if (!(key in linkedEl)) {
+                          console.error(`Property: ${key} does not exist on the object with id: ${elementId}`);
                           return;
                       };
-                      data[dataTag] = String(linkedEl[keyWithDashCheck]);
-                  } else {
-                      console.error(`Invalid return data tag: ${dataTag}`);
+                      data[dataTag] = String(linkedEl[key]);
                   };
               });
           };

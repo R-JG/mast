@@ -27,31 +27,36 @@
           |=  t=@t 
           ^-  manx
           ;div.smallcircle
-            ;+  ;/  (trip t)
+            =data-event  "/click/test-dynamic-handler/{(trip t)}"
+            =data-return  "/test-{(trip t)}/id"
+            ;div(id "test-{(trip t)}")
+              ;+  ;/  (trip t)
+            ==
           ==
       ==
       ;div.container
         ;div
           =class  (weld "square " color-one.app-state)
           :: the data-event attribute is where event listeners are specified.
-          :: the first word of the tag must correspond to the name of the event listener, minus the "on" prefix.
+          :: data-event needs to be formatted as a path
+          :: the first word must correspond to the name of the event listener, minus the "on" prefix.
           :: the listener essentially just sends a poke to your agent with some data.
           :: this tag is then used in your agent to identify the handler for the event poke.
-          =data-event  "click-square-one"
+          =data-event  "/click/square-one"
           :: the data-return attribute is for specifying what data to return from the event.
-          :: a number of tags may be specified, separated by whitespace; words are connected by hyphens.
-          :: there are three options for the first word in the tag: 
+          :: a number of path tags may be specified, separated by whitespace.
+          :: there are three options for the beginning of the path: 
           :: 1) "target", for the current target, i.e. the element on which the event was triggered.
           :: 2) "event", for the event object.
-          :: 3) anything beginning with # corresponding to an element id, to associate any element in the dom.
-          :: the last word in the tag is the property key for the value to return.
-          =data-return  "target-textContent"
+          :: 3) anything else corresponding to the id of any element.
+          :: the last section in the tag is the property key for the value to return.
+          =data-return  "/target/textContent"
           ;+  ;/  color-one.app-state
         ==
         ;div
           =class  (weld "square " color-two.app-state)
-          =data-event  "click-square-two"
-          =data-return  "target-textContent"
+          =data-event  "/click/square-two"
+          =data-return  "/target/textContent"
           ;+  ;/  color-two.app-state
         ==
       ==
@@ -68,8 +73,8 @@
         ;div;
       ==
       ;input#first-input;
-      ;button(data-event "click-test-form-submit", data-return "#first-input-value"): submit
-      ;button(data-event "click-navigate-to-page-two"): navigate
+      ;button(data-event "/click/test-form-submit", data-return "/first-input/value"): submit
+      ;button(data-event "/click/navigate-to-page-two"): navigate
     ==
   ==
 ==

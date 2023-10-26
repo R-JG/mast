@@ -75,12 +75,17 @@
   ++  handle-json-request
     |=  json-request=json
     ^-  (quip card _state)
-    =/  client-poke  (parse:mast json-request)
     :: a client poke from mast has the form [tags data].
     :: the tags are what one had defined in the data-event attribute in the sail node which triggered the event.
     :: these tags are then used to define the event handler in the agent for the particular event request.
-    ?+  tags.client-poke  !!
-      %click-square-one
+    =/  client-poke  (parse:mast json-request)
+    :: note: if you switch over only the first two sections of the event tags,
+    :: it is possible to have a further part of the path be variable, 
+    :: which is useful when handling events for dynamically generated components.
+    ?~  tags.client-poke  !!
+    ?~  t.tags.client-poke  !!
+    ?+  [i.tags.client-poke i.t.tags.client-poke]  !!
+      [%click %square-one]
         :: the data in a client poke consists in a map of the existent values specified in the data-return attribute in the sail node.
         :: you can return any property from: 
         :: 1) the event object
@@ -95,28 +100,33 @@
         :: the response contains a minimal amount of html to achive the new display state, rather than a whole new page.
         :-  (gust:mast /display-updates display.state rigged-sail)
         state(app new-app-state, display rigged-sail)
-      %click-square-two
+      [%click %square-two]
         ~&  data.client-poke
         =/  newcolor  ?:(=(color-two.app.state "red") "pink" "red")
         =/  new-app-state  app.state(color-two newcolor)
         =/  rigged-sail  (rig:mast yards current-url.state new-app-state)
         :-  (gust:mast /display-updates display.state rigged-sail)
         state(app new-app-state, display rigged-sail)
-      %click-test-form-submit
-        ~&  (~(get by data.client-poke) '#first-input-value')
-        `state
-      %click-navigate-to-index
+      [%click %navigate-to-index]
         :: with gust, you can navigate to a different route by sending a minimal set of updates instead of a whole page.
         :: this is done simply whenever the sail is rigged using a different url relative to whatever is current:
         =/  new-url  '/example-app'
         =/  rigged-sail  (rig:mast yards new-url app.state)
         :-  (gust:mast /display-updates display.state rigged-sail)
         state(display rigged-sail, current-url new-url)
-      %click-navigate-to-page-two
+      [%click %navigate-to-page-two]
         =/  new-url  '/example-app/page-two'
         =/  rigged-sail  (rig:mast yards new-url app.state)
         :-  (gust:mast /display-updates display.state rigged-sail)
         state(display rigged-sail, current-url new-url)
+      [%click %test-form-submit]
+        ~&  (~(get by data.client-poke) '/first-input/value')
+        `state
+      [%click %test-dynamic-handler]
+        ?~  t.t.tags.client-poke  !!
+        =/  dynamic-key  (crip "/test-{(trip i.t.t.tags.client-poke)}/id")
+        ~&  (~(get by data.client-poke) dynamic-key)
+        !!
     ==
   --
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 
