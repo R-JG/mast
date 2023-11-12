@@ -54,11 +54,11 @@
   %+  make-channel-update-cards  display-update-path
   %-  en-xml:html
   ^-  manx
-  ;output
+  ;g
     =data-url  v.i.a.g.new-display-state
     ;*  %+  gust-algo
-      i.t.c.current-display-state
-    i.t.c.new-display-state
+      c.i.t.c.current-display-state
+    c.i.t.c.new-display-state
   ==
 ::
 ++  make-direct-http-cards
@@ -110,12 +110,10 @@
 ::
 :: :: :: ::
 ++  gust-algo
-  |=  [old-node=manx new-node=manx]
+  |=  [old=marl new=marl]
   ^-  marl
   =/  i=@ud  0
   =/  acc=marl  ~
-  =/  old=marl  c.old-node
-  =/  new=marl  c.new-node
   |-
   ?~  new
     ?.  =(~ old)
@@ -127,7 +125,7 @@
       ?~  old
         ~
       :-  :-  (crip (weld "data-d" <c>)) 
-        (get-mart-v a.g.i.old %data-key)
+        (getv a.g.i.old %data-key)
       $(old t.old, c +(c))
     acc
   =/  j=@ud  0
@@ -144,11 +142,10 @@
           ;+  i.new
         ==
     ==
-  =/  old-node-key=tape  (get-mart-v a.g.i.old %data-key)
-  =/  new-node-key=tape  (get-mart-v a.g.i.new %data-key)
-  ?:  =(old-node-key new-node-key)
+  ?:  .=  (getv a.g.i.old %data-key)
+      (getv a.g.i.new %data-key)
     ?:  =(g.i.old g.i.new)
-      ?:  =("mast-text" (get-mart-v a.g.i.new %class))
+      ?:  =("mast-text" (getv a.g.i.new %class))
         ?:  =(+.-.+.-.-.+.-.old +.-.+.-.-.+.-.new)
           ^$(old (oust [j 1] ^old), new t.new, i +(i))
         %=  ^$
@@ -172,40 +169,40 @@
   $(old t.old, j +(j))
 ::
 ++  add-keys
-  |=  main-node=manx
+  |=  root=manx
   |^  ^-  manx
-  (traverse-manx main-node "0" "~")
-  ++  traverse-manx
-    |=  [m=manx key=tape parent=tape]
-    =/  existent-key=tape  (get-mart-v a.g.m %data-key)
-    =/  key-to-add=tape  ?~(existent-key key existent-key)
+  (tanx root "0" "~")
+  ++  tanx
+    |=  [m=manx key=tape pkey=tape]
+    =/  fkey=tape  (getv a.g.m %data-key)
+    =/  nkey=tape  ?~(fkey key fkey)
     ?:  =(%$ n.g.m)
       ;span.mast-text
-        =data-key  key-to-add
-        =data-parent  parent
+        =data-key  nkey
+        =data-parent  pkey
         ;+  m
       ==
     =:  a.g.m  %-  mart  
-          ?~  existent-key
-            [[%data-key key-to-add] [[%data-parent parent] a.g.m]]
-          [[%data-parent parent] a.g.m]
-        c.m  (traverse-marl c.m key-to-add)
+          ?~  fkey
+            [[%data-key nkey] [[%data-parent pkey] a.g.m]]
+          [[%data-parent pkey] a.g.m]
+        c.m  (tarl c.m nkey)
     ==
     m
-  ++  traverse-marl
+  ++  tarl
     |=  [m=marl key=tape]
     =/  i=@ud  0
     |-  ^-  marl
     ?~  m
       ~
-    :-  %^  traverse-manx  
+    :-  %^  tanx  
           (manx i.m) 
         (weld (scow %ud i) (weld "-" key))
       key
     $(m t.m, i +(i))
   --
 ::
-++  get-mart-v
+++  getv
   |=  [m=mart tag=@tas]
   ^-  tape
   ?~  m
