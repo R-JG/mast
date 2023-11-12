@@ -91,7 +91,6 @@
         :: 1) the event object
         :: 2) the element on which the event was triggered
         :: 3) any other element at all by id (this is how forms are implemented).
-        ~&  data.client-poke
         =/  newcolor  ?:(=(color-one.app.state "blue") "green" "blue")
         =/  new-app-state  app.state(color-one newcolor)
         :: when rig is used with updated app state it will produce changes in the display according to the logic of your sail component.
@@ -101,7 +100,6 @@
         :-  (gust:mast /display-updates display.state rigged-sail)
         state(app new-app-state, display rigged-sail)
       [%click %square-two]
-        ~&  data.client-poke
         =/  newcolor  ?:(=(color-two.app.state "red") "pink" "red")
         =/  new-app-state  app.state(color-two newcolor)
         =/  rigged-sail  (rig:mast yards current-url.state new-app-state)

@@ -27,11 +27,7 @@
           |=  t=@t 
           ^-  manx
           ;div.smallcircle
-            =data-event  "/click/test-dynamic-handler/{(trip t)}"
-            =data-return  "/test-{(trip t)}/id"
-            ;div(id "test-{(trip t)}")
-              ;+  ;/  (trip t)
-            ==
+            ;+  ;/  (trip t)
           ==
       ==
       ;div.container

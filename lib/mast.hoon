@@ -37,9 +37,9 @@
 ++  rig
   |*  [=yards target-url=@t app-state=*]
   ?~  yards
-    (set-ids (manx sail-404))
+    (add-keys (manx sail-404))
   ?:  =(target-url url.i.yards)
-    =/  rigged-sail  (set-ids (manx (sail.i.yards app-state)))
+    =/  rigged-sail  (add-keys (manx (sail.i.yards app-state)))
     rigged-sail(a.g (mart [[%data-url (trip target-url)] a.g.rigged-sail]))
   $(yards t.yards)
 ::
@@ -57,8 +57,8 @@
   ;output
     =data-url  v.i.a.g.new-display-state
     ;*  %+  gust-algo
-      [%manx i.t.c.current-display-state]
-    [%manx i.t.c.new-display-state]
+      i.t.c.current-display-state
+    i.t.c.new-display-state
   ==
 ::
 ++  make-direct-http-cards
@@ -110,91 +110,109 @@
 ::
 :: :: :: ::
 ++  gust-algo
-  |=  [old=gust-sample new=gust-sample]
-  =/  accumulator=marl  ~
-  |-  ^-  marl
-  ?>  =(-.old -.new)
-  ?:  =(-.new %manx)
-    ?.  =(-.+.old -.+.new)
-      [(manx +.new) accumulator]
-    ?:  =("masttext" (get-value-from-mart (mart +.-.+.new) %class))
-      ?.  =(+.-.+.-.-.+.+.old +.-.+.-.-.+.+.new)
-        [(manx +.new) accumulator]
-      accumulator
-    %=  $
-      old  [%marl +.+.old]
-      new  [%marl +.+.new]
+  |=  [old-node=manx new-node=manx]
+  ^-  marl
+  =/  i=@ud  0
+  =/  acc=marl  ~
+  =/  old=marl  c.old-node
+  =/  new=marl  c.new-node
+  |-
+  ?~  new
+    ?.  =(~ old)
+      :_  acc
+      :_  ~
+      :-  %d
+      =/  c=@ud  0
+      |-  ^-  mart
+      ?~  old
+        ~
+      :-  :-  (crip (weld "data-d" <c>)) 
+        (get-mart-v a.g.i.old %data-key)
+      $(old t.old, c +(c))
+    acc
+  =/  j=@ud  0
+  =/  old=marl  old
+  |-
+  ?~  new
+    !!
+  ?~  old
+    %=  ^$
+      new  t.new
+      i    +(i)
+      acc  :_  acc
+        ;n(id <i>)
+          ;+  i.new
+        ==
     ==
-  ?:  ?&(=(~ +.old) =(~ +.new))
-    accumulator
-  ?:  ?&(=(~ +.old) .?(+.new))
-    :_  accumulator  
-      %-  manx  
-      ;output#new
-        ;*  +.new
+  =/  old-node-key=tape  (get-mart-v a.g.i.old %data-key)
+  =/  new-node-key=tape  (get-mart-v a.g.i.new %data-key)
+  ?:  =(old-node-key new-node-key)
+    ?:  =(g.i.old g.i.new)
+      ?:  =("mast-text" (get-mart-v a.g.i.new %class))
+        ?:  =(+.-.+.-.-.+.-.old +.-.+.-.-.+.-.new)
+          ^$(old (oust [j 1] ^old), new t.new, i +(i))
+        %=  ^$
+          old  (oust [j 1] ^old)
+          new  t.new
+          i    +(i)
+          acc  [i.new acc]
+        ==
+      %=  ^$
+        old  c.i.old
+        new  c.i.new
+        i    0
+        acc  ^$(old (oust [j 1] ^old), new t.new, i +(i))
       ==
-  ?:  ?&(.?(+.old) =(~ +.new))
-    :_  accumulator
-    ?+  -.old  !!
-      %marl
-        =/  last-child  (get-last-manx +.old)
-        =/  id-range 
-          %+  weld  
-            (get-value-from-mart +.-.-.+.old %data-mastid)
-          %+  weld  " "  (get-value-from-mart +.-.last-child %data-mastid)
-        %-  manx  
-        ;output#del(data-deleterange id-range);
+    %=  ^$
+      old  (oust [j 1] ^old)
+      new  t.new
+      i    +(i)
+      acc  [i.new acc]
     ==
-  %=  $ 
-    old  [%manx (manx +2.+.old)]
-    new  [%manx (manx +2.+.new)]
-    accumulator  $(old [%marl +3.+.old], new [%marl +3.+.new])
-  ==
+  $(old t.old, j +(j))
 ::
-++  set-ids
+++  add-keys
   |=  main-node=manx
-  =/  initial-mastid=tape  "0"
   |^  ^-  manx
-  (traverse-node main-node initial-mastid)
-  ++  traverse-node
-    |=  [node=manx mastid=tape]
-    ?:  =(%$ -.-.node)
-      ;span.masttext(data-mastid mastid)
-        ;+  node
+  (traverse-manx main-node "0" "~")
+  ++  traverse-manx
+    |=  [m=manx key=tape parent=tape]
+    =/  existent-key=tape  (get-mart-v a.g.m %data-key)
+    =/  key-to-add=tape  ?~(existent-key key existent-key)
+    ?:  =(%$ n.g.m)
+      ;span.mast-text
+        =data-key  key-to-add
+        =data-parent  parent
+        ;+  m
       ==
-    =:  +.-.node  (mart [[%data-mastid mastid] +.-.node])
-        +.node  (traverse-child-list +.node mastid)
+    =:  a.g.m  %-  mart  
+          ?~  existent-key
+            [[%data-key key-to-add] [[%data-parent parent] a.g.m]]
+          [[%data-parent parent] a.g.m]
+        c.m  (traverse-marl c.m key-to-add)
     ==
-    node
-  ++  traverse-child-list
-    |=  [child-list=marl mastid=tape]
+    m
+  ++  traverse-marl
+    |=  [m=marl key=tape]
     =/  i=@ud  0
     |-  ^-  marl
-    ?~  child-list
-      child-list
-    :-  %+  traverse-node  (manx -.child-list) 
-      (weld (scow %ud i) (weld "-" mastid))
-    $(child-list +.child-list, i +(i))
+    ?~  m
+      ~
+    :-  %^  traverse-manx  
+          (manx i.m) 
+        (weld (scow %ud i) (weld "-" key))
+      key
+    $(m t.m, i +(i))
   --
 ::
-++  get-last-manx
-  |=  m=marl
-  ^-  manx
-  ?~  m
-    !!
-  ?~  t.+.m
-    -.m
-  $(m +.m)
-::
-++  get-value-from-mart
-  |=  [attributes=mart tag=@tas]
+++  get-mart-v
+  |=  [m=mart tag=@tas]
   ^-  tape
-  |-
-  ?~  attributes
-    attributes
-  ?:  =(-.-.attributes tag)
-    +.-.attributes
-  $(attributes +.attributes)
+  ?~  m
+    ~
+  ?:  =(n.i.m tag)
+    v.i.m
+  $(m t.m)
 :: :: :: ::
 ::
 ::  Sail 
@@ -323,46 +341,39 @@
           };
           while (container.content.firstElementChild.children.length > 0) {
               let outputChild = container.content.firstElementChild.firstElementChild;
-              if (outputChild.tagName === 'OUTPUT') {
-                  if (outputChild.id === 'del') {
-                      const idRange = outputChild.dataset.deleterange.split(' ');
-                      let nodeToDelete = document.querySelector(`[data-mastid="${idRange[0]}"]`);
-                      while (nodeToDelete) {
-                          let next = nodeToDelete.nextElementSibling; 
-                          nodeToDelete.remove();
-                          if (nodeToDelete.dataset.mastid === idRange[1]) break;
-                          nodeToDelete = next;
-                      };
-                      outputChild.remove();
-                  } else if (outputChild.id === 'new') {
-                      const firstChildId = outputChild.firstElementChild.dataset.mastid;
-                      const parentid = firstChildId.split(/-(.*)/, 2)[1];
-                      let domParent = document.querySelector(`[data-mastid="${parentid}"]`);
-                      domParent.append(...outputChild.children);
-                      let appendedChild = domParent.querySelector(`[data-mastid="${firstChildId}"]`);
-                      while (appendedChild) {
-                          if (appendedChild.dataset.event) {
-                              setEventListeners(appendedChild);
-                          };
-                          if (appendedChild.childElementCount > 0) {
-                              let childrenNeedingEvents = appendedChild.querySelectorAll('[data-event]');
-                              childrenNeedingEvents.forEach(child => setEventListeners(child));
-                          };
-                          appendedChild = appendedChild.nextElementSibling;
-                      };
-                      outputChild.remove();
+              if (outputChild.tagName === 'D') {
+                  for (const dkey of Object.values(outputChild.dataset)) {
+                      document.querySelector(`[data-key="${dkey}"]`).remove();
                   };
+                  outputChild.remove();
+              } else if (outputChild.tagName === 'N') {
+                  const nodeKey = outputChild.firstElementChild.dataset.key;
+                  const parentKey = outputChild.firstElementChild.dataset.parent;
+                  const appendIndex = outputChild.id;
+                  let domParent = document.querySelector(`[data-key="${parentKey}"]`);
+                  domParent.insertBefore(outputChild.firstElementChild, domParent.children[appendIndex]);
+                  let appendedChild = domParent.querySelector(`[data-key="${nodeKey}"]`);
+                  if (appendedChild.dataset.event) {
+                      setEventListeners(appendedChild);
+                  };
+                  if (appendedChild.childElementCount > 0) {
+                      let needingListeners = appendedChild.querySelectorAll('[data-event]');
+                      needingListeners.forEach(child => setEventListeners(child));
+                  };
+                  appendedChild = appendedChild.nextElementSibling;
+                  outputChild.remove();
+
               } else {
-                  const mastid = outputChild.dataset.mastid;
-                  let existentNode = document.querySelector(`[data-mastid="${mastid}"]`);
+                  const nodeKey = outputChild.dataset.key;
+                  let existentNode = document.querySelector(`[data-key="${nodeKey}"]`);
                   existentNode.replaceWith(outputChild);
-                  let replacedNode = document.querySelector(`[data-mastid="${mastid}"]`);
+                  let replacedNode = document.querySelector(`[data-key="${nodeKey}"]`);
                   if (replacedNode.dataset.event) {
                       setEventListeners(replacedNode);
                   };
                   if (replacedNode.childElementCount > 0) {
-                      let childrenNeedingEvents = replacedNode.querySelectorAll('[data-event]');
-                      childrenNeedingEvents.forEach(child => setEventListeners(child));
+                      let needingListeners = replacedNode.querySelectorAll('[data-event]');
+                      needingListeners.forEach(child => setEventListeners(child));
                   };
               };
           };
