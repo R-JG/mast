@@ -125,6 +125,19 @@
         =/  dynamic-key  (crip "/test-{(trip i.t.t.tags.client-poke)}/id")
         ~&  (~(get by data.client-poke) dynamic-key)
         !!
+      [%click %submit-letters]
+        =/  input  (~(got by data.client-poke) '/letters-input/value')
+        =/  rng  ~(. og eny.bowl)
+        =.  letters.app   [[input -:(rads:rng 100)] letters.app]
+        =/  rigged-sail  (rig:mast yards current-url app)
+        :-  (gust:mast /display-updates display rigged-sail)
+        state(display rigged-sail)
+      [%click %switch-letters]
+        =/  last  (rear letters.app)
+        =.  letters.app  [last (snip letters.app)]
+        =/  rigged-sail  (rig:mast yards current-url app)
+        :-  (gust:mast /display-updates display rigged-sail)
+        state(display rigged-sail)
     ==
   --
 :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: :: 

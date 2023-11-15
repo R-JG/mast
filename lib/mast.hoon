@@ -2,7 +2,6 @@
 +$  yard  [url=@t sail=gate]
 +$  yards  (list yard)
 +$  parsed-request  [tags=path data=(map @t @t)]
-+$  gust-sample  $%([%manx manx] [%marl marl])
 :: :: :: ::
 ::
 ::  Server 
@@ -117,6 +116,8 @@
   |-
   ?~  new
     ?.  =(~ old)
+      ?:  =(%skip -.-.-.old)
+        $(old +.old)
       :_  acc
       :_  ~
       :-  %d
@@ -128,28 +129,90 @@
         (getv a.g.i.old %data-key)
       $(old t.old, c +(c))
     acc
+  ?:  &(?=(^ old) =(%skip -.-.-.old))
+    $(old t.old)
+  ?:  =(%m n.g.i.new)
+    $(new t.new, i +(i), acc (snoc acc i.new))
   =/  j=@ud  0
-  =/  old=marl  old
+  =/  jold=marl  old
+  =/  nkey=tape  (getv a.g.i.new %data-key)
   |-
   ?~  new
     !!
-  ?~  old
+  ?~  jold
     %=  ^$
       new  t.new
       i    +(i)
-      acc  :_  acc
+      acc  %+  snoc  acc
         ;n(id <i>)
           ;+  i.new
         ==
     ==
-  ?:  .=  (getv a.g.i.old %data-key)
-      (getv a.g.i.new %data-key)
+  ?~  old
+    !!
+  ?:  =(%skip n.g.i.jold)
+    $(jold t.jold, j +(j))
+  ?:  .=(nkey (getv a.g.i.jold %data-key))
+    ?.  =(0 j)
+      =/  n=@ud  0
+      =/  nnew=marl  new
+      =/  okey=tape  (getv a.g.i.old %data-key)
+      |-
+      ?~  nnew
+        ^^$(old (snoc t.old i.old))
+      ?:  =(%m n.g.i.nnew)
+        $(nnew t.nnew, n +(n))
+      =/  nney=tape  (getv a.g.i.nnew %data-key)
+      ?.  .=(okey nney)
+        $(nnew t.nnew, n +(n))
+      ?:  (gte n j)
+        ?:  =(g.i.old g.i.nnew)
+          %=  ^^$
+            old  c.i.old
+            new  c.i.nnew
+            i    0
+            acc  
+              %=  ^^$
+                old  t.old
+                new  (newm new n ;m(id <(add n i)>, data-key nney);)
+              ==
+          ==
+        %=  ^^$
+          old  t.old
+          new  %^  newm  new  n
+            ;m(id <(add n i)>)
+              ;+  i.nnew
+            ==
+        ==
+      ?:  =(g.i.jold g.i.new)
+        %=  ^^$
+          old  c.i.jold
+          new  c.i.new
+          i    0
+          acc  
+            %=  ^^$
+              old  (newm old j ;skip;)
+              new  t.new
+              i    +(i)
+              acc  %+  snoc  acc
+                ;m(id <i>, data-key nkey);
+            ==
+        ==
+      %=  ^^$
+        old  (newm old j ;skip;)
+        new  t.new
+        i    +(i)
+        acc  %+  snoc  acc
+          ;m(id <i>)
+            ;+  i.new
+          ==
+      ==
     ?:  =(g.i.old g.i.new)
       ?:  =("mast-text" (getv a.g.i.new %class))
         ?:  =(+.-.+.-.-.+.-.old +.-.+.-.-.+.-.new)
-          ^$(old (oust [j 1] ^old), new t.new, i +(i))
+          ^$(old t.old, new t.new, i +(i))
         %=  ^$
-          old  (oust [j 1] ^old)
+          old  t.old
           new  t.new
           i    +(i)
           acc  [i.new acc]
@@ -158,15 +221,15 @@
         old  c.i.old
         new  c.i.new
         i    0
-        acc  ^$(old (oust [j 1] ^old), new t.new, i +(i))
+        acc  ^$(old t.old, new t.new, i +(i))
       ==
     %=  ^$
-      old  (oust [j 1] ^old)
+      old  t.old
       new  t.new
       i    +(i)
       acc  [i.new acc]
     ==
-  $(old t.old, j +(j))
+  $(jold t.jold, j +(j))
 ::
 ++  add-keys
   |=  root=manx
@@ -210,6 +273,16 @@
   ?:  =(n.i.m tag)
     v.i.m
   $(m t.m)
+++  newm
+  |=  [ml=marl i=@ud mx=manx]
+  =/  j=@ud  0
+  |-  ^-  marl
+  ?~  ml
+    ~
+  :-  ?:  =(i j)
+      mx 
+    i.ml 
+  $(ml t.ml, j +(j))
 :: :: :: ::
 ::
 ::  Sail 
@@ -359,7 +432,29 @@
                   };
                   appendedChild = appendedChild.nextElementSibling;
                   outputChild.remove();
-
+              } else if (outputChild.tagName === 'M') {
+                  const needsUpdate = outputChild.hasChildNodes();
+                  const nodeKey = needsUpdate 
+                    ? outputChild.firstElementChild.dataset.key 
+                    : outputChild.dataset.key;
+                  const nodeIndex = outputChild.id;
+                  let existentNode = document.querySelector(`[data-key="${nodeKey}"]`);
+                  let parentNode = existentNode.parentElement;
+                  let childAtIndex = parentNode.children[nodeIndex];
+                  parentNode.insertBefore(existentNode, childAtIndex);
+                  if (needsUpdate) {
+                      let movedNode = parentNode.querySelector(`[data-key="${nodeKey}"]`);
+                      movedNode.replaceWith(outputChild.firstElementChild);
+                      let replacedNode = parentNode.querySelector(`[data-key="${nodeKey}"]`);
+                      if (replacedNode.dataset.event) {
+                          setEventListeners(replacedNode);
+                      };
+                      if (replacedNode.childElementCount > 0) {
+                          let needingListeners = replacedNode.querySelectorAll('[data-event]');
+                          needingListeners.forEach(child => setEventListeners(child));
+                      };
+                  };
+                  outputChild.remove();
               } else {
                   const nodeKey = outputChild.dataset.key;
                   let existentNode = document.querySelector(`[data-key="${nodeKey}"]`);

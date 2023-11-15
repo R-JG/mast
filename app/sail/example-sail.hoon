@@ -71,6 +71,19 @@
       ;input#first-input;
       ;button(data-event "/click/test-form-submit", data-return "/first-input/value"): submit
       ;button(data-event "/click/navigate-to-page-two"): navigate
+      ;div.container
+        ;*  %+  turn  letters.app-state
+          |=  [l=@t id=@ud]
+          ^-  manx
+          ;div
+            =class  "smallcircle"
+            =data-key  <id>
+            ;+  ;/  (trip l)
+          ==
+      ==
+      ;input#letters-input;
+      ;button(data-event "/click/submit-letters", data-return "/letters-input/value"): Enter letters
+      ;button(data-event "/click/switch-letters"): Switch letters
     ==
   ==
 ==
