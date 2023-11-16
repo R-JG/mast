@@ -36,29 +36,36 @@
 ++  rig
   |*  [=yards target-url=@t app-state=*]
   ?~  yards
-    (add-keys (manx sail-404))
+    (adky (manx sail-404))
   ?:  =(target-url url.i.yards)
-    =/  rigged-sail  (add-keys (manx (sail.i.yards app-state)))
-    rigged-sail(a.g (mart [[%url (trip target-url)] a.g.rigged-sail]))
+    =/  rigd  (adky (manx (sail.i.yards app-state)))
+    rigd(a.g (mart [[%url (trip target-url)] a.g.rigd]))
   $(yards t.yards)
 ::
 ++  gust
   |=  [display-update-path=path current-display-state=manx new-display-state=manx]
-  ^-  (list card:agent:gall)
+  ^-  card:agent:gall
   ?~  c.new-display-state  !!
   ?~  t.c.new-display-state  !!
   ?~  c.current-display-state  !!
   ?~  t.c.current-display-state  !!
   ?~  a.g.new-display-state  !!
-  %+  make-channel-update-cards  display-update-path
+  %+  make-channel-update-card
+    display-update-path
   %-  en-xml:html
   ^-  manx
   ;g
     =url  v.i.a.g.new-display-state
-    ;*  %+  gust-algo
+    ;*  %+  algo
       c.i.t.c.current-display-state
     c.i.t.c.new-display-state
   ==
+::
+++  make-channel-update-card
+  |=  [sub-path=path html-data=tape]
+  ^-  card:agent:gall
+  =/  data-cage  [%json !>((tape:enjs:format html-data))]
+  [%give %fact ~[sub-path] data-cage]
 ::
 ++  make-direct-http-cards
   |=  [eyre-id=@ta reshead=response-header.simple-payload:http resdata=(unit octs)]
@@ -69,12 +76,6 @@
       [%give %fact ~[/http-response/[eyre-id]] data-cage]
       [%give %kick ~[/http-response/[eyre-id]] ~]
   ==
-::
-++  make-channel-update-cards
-  |=  [sub-path=path html-data=tape]
-  ^-  (list card:agent:gall)
-  =/  data-cage  [%json !>((tape:enjs:format html-data))]
-  [[%give %fact ~[sub-path] data-cage] ~]
 ::
 ++  make-css-response
   |=  [eyre-id=@ta css=@t]
@@ -108,7 +109,7 @@
 :: Algorithms
 ::
 :: :: :: ::
-++  gust-algo
+++  algo
   |=  [old=marl new=marl]
   ^-  marl
   =/  i=@ud  0
@@ -231,7 +232,7 @@
     ==
   $(jold t.jold, j +(j))
 ::
-++  add-keys
+++  adky
   |=  root=manx
   |^  ^-  manx
   (tanx root "0" "~")

@@ -97,25 +97,25 @@
         =/  rigged-sail  (rig:mast yards current-url.state new-app-state)
         :: gust then produces a response with html to sync the browser's display with your agent.
         :: the response contains a minimal amount of html to achive the new display state, rather than a whole new page.
-        :-  (gust:mast /display-updates display.state rigged-sail)
+        :-  [(gust:mast /display-updates display.state rigged-sail) ~]
         state(app new-app-state, display rigged-sail)
       [%click %square-two]
         =/  newcolor  ?:(=(color-two.app.state "red") "pink" "red")
         =/  new-app-state  app.state(color-two newcolor)
         =/  rigged-sail  (rig:mast yards current-url.state new-app-state)
-        :-  (gust:mast /display-updates display.state rigged-sail)
+        :-  [(gust:mast /display-updates display.state rigged-sail) ~]
         state(app new-app-state, display rigged-sail)
       [%click %navigate-to-index]
         :: with gust, you can navigate to a different route by sending a minimal set of updates instead of a whole page.
         :: this is done simply whenever the sail is rigged using a different url relative to whatever is current:
         =/  new-url  '/example-app'
         =/  rigged-sail  (rig:mast yards new-url app.state)
-        :-  (gust:mast /display-updates display.state rigged-sail)
+        :-  [(gust:mast /display-updates display.state rigged-sail) ~]
         state(display rigged-sail, current-url new-url)
       [%click %navigate-to-page-two]
         =/  new-url  '/example-app/page-two'
         =/  rigged-sail  (rig:mast yards new-url app.state)
-        :-  (gust:mast /display-updates display.state rigged-sail)
+        :-  [(gust:mast /display-updates display.state rigged-sail) ~]
         state(display rigged-sail, current-url new-url)
       [%click %test-form-submit]
         ~&  (~(get by data.client-poke) '/first-input/value')
@@ -130,13 +130,13 @@
         =/  rng  ~(. og eny.bowl)
         =.  letters.app   [[input -:(rads:rng 100)] letters.app]
         =/  rigged-sail  (rig:mast yards current-url app)
-        :-  (gust:mast /display-updates display rigged-sail)
+        :-  [(gust:mast /display-updates display rigged-sail) ~]
         state(display rigged-sail)
       [%click %switch-letters]
         =/  last  (rear letters.app)
         =.  letters.app  [last (snip letters.app)]
         =/  rigged-sail  (rig:mast yards current-url app)
-        :-  (gust:mast /display-updates display rigged-sail)
+        :-  [(gust:mast /display-updates display rigged-sail) ~]
         state(display rigged-sail)
     ==
   --
