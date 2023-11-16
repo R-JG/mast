@@ -20,15 +20,15 @@
       ;div.container
         ;div
           =class  (weld "square " color-two.app-state)
-          =data-event  "/click/square-two"
+          =event  "/click/square-two"
           ;+  ;/  color-two.app-state
         ==
         ;div
           =class  (weld "square " color-one.app-state)
-          =data-event  "/click/square-one"
+          =event  "/click/square-one"
           ;+  ;/  color-one.app-state
         ==
-        ;button(data-event "/click/navigate-to-index"): Return
+        ;button(event "/click/navigate-to-index"): Return
       ==
     ==
   ==

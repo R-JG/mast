@@ -76,7 +76,7 @@
     |=  json-request=json
     ^-  (quip card _state)
     :: a client poke from mast has the form [tags data].
-    :: the tags are what one had defined in the data-event attribute in the sail node which triggered the event.
+    :: the tags are what one had defined in the event attribute in the sail node which triggered the event.
     :: these tags are then used to define the event handler in the agent for the particular event request.
     =/  client-poke  (parse:mast json-request)
     :: note: if you switch over only the first two sections of the event tags,
@@ -86,7 +86,7 @@
     ?~  t.tags.client-poke  !!
     ?+  [i.tags.client-poke i.t.tags.client-poke]  !!
       [%click %square-one]
-        :: the data in a client poke consists in a map of the existent values specified in the data-return attribute in the sail node.
+        :: the data in a client poke consists in a map of the existent values specified in the return attribute in the sail node.
         :: you can return any property from: 
         :: 1) the event object
         :: 2) the element on which the event was triggered

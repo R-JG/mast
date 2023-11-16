@@ -21,9 +21,9 @@
   ^-  manx
   %=  display-state
     a.g  %-  mart  :^  
-      [%data-ship +.ship-name] 
-      [%data-app app-name] 
-      [%data-path display-update-path] 
+      [%ship +.ship-name] 
+      [%app app-name] 
+      [%path display-update-path] 
       a.g.display-state
     c.i.c  (marl [script-node c.i.c.display-state])
   ==
@@ -39,7 +39,7 @@
     (add-keys (manx sail-404))
   ?:  =(target-url url.i.yards)
     =/  rigged-sail  (add-keys (manx (sail.i.yards app-state)))
-    rigged-sail(a.g (mart [[%data-url (trip target-url)] a.g.rigged-sail]))
+    rigged-sail(a.g (mart [[%url (trip target-url)] a.g.rigged-sail]))
   $(yards t.yards)
 ::
 ++  gust
@@ -54,7 +54,7 @@
   %-  en-xml:html
   ^-  manx
   ;g
-    =data-url  v.i.a.g.new-display-state
+    =url  v.i.a.g.new-display-state
     ;*  %+  gust-algo
       c.i.t.c.current-display-state
     c.i.t.c.new-display-state
@@ -125,8 +125,8 @@
       |-  ^-  mart
       ?~  old
         ~
-      :-  :-  (crip (weld "data-d" <c>)) 
-        (getv a.g.i.old %data-key)
+      :-  :-  (crip (weld "d" <c>)) 
+        (getv a.g.i.old %key)
       $(old t.old, c +(c))
     acc
   ?:  &(?=(^ old) =(%skip -.-.-.old))
@@ -135,7 +135,7 @@
     $(new t.new, i +(i), acc (snoc acc i.new))
   =/  j=@ud  0
   =/  jold=marl  old
-  =/  nkey=tape  (getv a.g.i.new %data-key)
+  =/  nkey=tape  (getv a.g.i.new %key)
   |-
   ?~  new
     !!
@@ -152,18 +152,18 @@
     !!
   ?:  =(%skip n.g.i.jold)
     $(jold t.jold, j +(j))
-  ?:  .=(nkey (getv a.g.i.jold %data-key))
+  ?:  .=(nkey (getv a.g.i.jold %key))
     ?.  =(0 j)
       =/  n=@ud  0
       =/  nnew=marl  new
-      =/  okey=tape  (getv a.g.i.old %data-key)
+      =/  okey=tape  (getv a.g.i.old %key)
       |-
       ?~  nnew
         ^^$(old (snoc t.old i.old))
       ?:  =(%m n.g.i.nnew)
         $(nnew t.nnew, n +(n))
-      =/  nney=tape  (getv a.g.i.nnew %data-key)
-      ?.  .=(okey nney)
+      =/  nnky=tape  (getv a.g.i.nnew %key)
+      ?.  .=(okey nnky)
         $(nnew t.nnew, n +(n))
       ?:  (gte n j)
         ?:  =(g.i.old g.i.nnew)
@@ -174,7 +174,7 @@
             acc  
               %=  ^^$
                 old  t.old
-                new  (newm new n ;m(id <(add n i)>, data-key nney);)
+                new  (newm new n ;m(id <(add n i)>, key nnky);)
               ==
           ==
         %=  ^^$
@@ -195,7 +195,7 @@
               new  t.new
               i    +(i)
               acc  %+  snoc  acc
-                ;m(id <i>, data-key nkey);
+                ;m(id <i>, key nkey);
             ==
         ==
       %=  ^^$
@@ -237,18 +237,18 @@
   (tanx root "0" "~")
   ++  tanx
     |=  [m=manx key=tape pkey=tape]
-    =/  fkey=tape  (getv a.g.m %data-key)
+    =/  fkey=tape  (getv a.g.m %key)
     =/  nkey=tape  ?~(fkey key fkey)
     ?:  =(%$ n.g.m)
       ;span.mast-text
-        =data-key  nkey
-        =data-parent  pkey
+        =key  nkey
+        =pkey  pkey
         ;+  m
       ==
     =:  a.g.m  %-  mart  
           ?~  fkey
-            [[%data-key nkey] [[%data-parent pkey] a.g.m]]
-          [[%data-parent pkey] a.g.m]
+            [[%key nkey] [[%pkey pkey] a.g.m]]
+          [[%pkey pkey] a.g.m]
         c.m  (tarl c.m nkey)
     ==
     m
@@ -273,6 +273,7 @@
   ?:  =(n.i.m tag)
     v.i.m
   $(m t.m)
+::
 ++  newm
   |=  [ml=marl i=@ud mx=manx]
   =/  j=@ud  0
@@ -320,16 +321,18 @@
   const channelId = `${Date.now()}${Math.floor(Math.random() * 100)}`
   const channelPath = `${window.location.origin}/~/channel/${channelId}`;
   addEventListener('DOMContentLoaded', async () => {
-      ship = document.documentElement.dataset.ship;
-      app = document.documentElement.dataset.app;
-      displayUpdatePath = document.documentElement.dataset.path;
+      ship = document.documentElement.attributes['ship']?.nodeValue;
+      app = document.documentElement.attributes['app']?.nodeValue;
+      displayUpdatePath = document.documentElement.attributes['path']?.nodeValue;
       await connectToShip();
-      let eventElements = document.querySelectorAll('[data-event]');
+      let eventElements = document.querySelectorAll('[event]');
       eventElements.forEach(el => setEventListeners(el));
   });
   function setEventListeners(el) {
-      const eventType = el.dataset.event.split('/', 2)[1];
-      el.addEventListener(eventType, (e) => pokeShip(e, el.dataset.event, el.dataset.return));
+      const eventTags = el.attributes['event']?.nodeValue;
+      const returnTags = el.attributes['return']?.nodeValue;
+      const eventType = eventTags.split('/', 2)[1];
+      el.addEventListener(eventType, (e) => pokeShip(e, eventTags, returnTags));
   };
   async function connectToShip() {
       try {
@@ -405,29 +408,30 @@
           let container = document.createElement('template');
           container.innerHTML = htmlData;
           if (container.content.firstElementChild.childNodes.length === 0) return;
-          const navUrl = container.content.firstElementChild.dataset.url;
+          const navUrl = container.content.firstElementChild.attributes['url']?.nodeValue;
           if (navUrl && (navUrl !== window.location.pathname)) {
               history.pushState({}, '', navUrl);
           };
           while (container.content.firstElementChild.children.length > 0) {
               let outputChild = container.content.firstElementChild.firstElementChild;
               if (outputChild.tagName === 'D') {
-                  for (const dkey of Object.values(outputChild.dataset)) {
-                      document.querySelector(`[data-key="${dkey}"]`).remove();
+                  for (const att of outputChild.attributes) {
+                      const dkey = att.nodeValue;
+                      document.querySelector(`[key="${dkey}"]`).remove();
                   };
                   outputChild.remove();
               } else if (outputChild.tagName === 'N') {
-                  const nodeKey = outputChild.firstElementChild.dataset.key;
-                  const parentKey = outputChild.firstElementChild.dataset.parent;
+                  const nodeKey = outputChild.firstElementChild.attributes['key']?.nodeValue;
+                  const parentKey = outputChild.firstElementChild.attributes['pkey']?.nodeValue;
                   const appendIndex = outputChild.id;
-                  let domParent = document.querySelector(`[data-key="${parentKey}"]`);
+                  let domParent = document.querySelector(`[key="${parentKey}"]`);
                   domParent.insertBefore(outputChild.firstElementChild, domParent.children[appendIndex]);
-                  let appendedChild = domParent.querySelector(`[data-key="${nodeKey}"]`);
-                  if (appendedChild.dataset.event) {
+                  let appendedChild = domParent.querySelector(`[key="${nodeKey}"]`);
+                  if (appendedChild.attributes['event']?.nodeValue) {
                       setEventListeners(appendedChild);
                   };
                   if (appendedChild.childElementCount > 0) {
-                      let needingListeners = appendedChild.querySelectorAll('[data-event]');
+                      let needingListeners = appendedChild.querySelectorAll('[event]');
                       needingListeners.forEach(child => setEventListeners(child));
                   };
                   appendedChild = appendedChild.nextElementSibling;
@@ -435,36 +439,36 @@
               } else if (outputChild.tagName === 'M') {
                   const needsUpdate = outputChild.hasChildNodes();
                   const nodeKey = needsUpdate 
-                    ? outputChild.firstElementChild.dataset.key 
-                    : outputChild.dataset.key;
+                    ? outputChild.firstElementChild.attributes['key']?.nodeValue
+                    : outputChild.attributes['key']?.nodeValue;
                   const nodeIndex = outputChild.id;
-                  let existentNode = document.querySelector(`[data-key="${nodeKey}"]`);
+                  let existentNode = document.querySelector(`[key="${nodeKey}"]`);
                   let parentNode = existentNode.parentElement;
                   let childAtIndex = parentNode.children[nodeIndex];
                   parentNode.insertBefore(existentNode, childAtIndex);
                   if (needsUpdate) {
-                      let movedNode = parentNode.querySelector(`[data-key="${nodeKey}"]`);
+                      let movedNode = parentNode.querySelector(`[key="${nodeKey}"]`);
                       movedNode.replaceWith(outputChild.firstElementChild);
-                      let replacedNode = parentNode.querySelector(`[data-key="${nodeKey}"]`);
-                      if (replacedNode.dataset.event) {
+                      let replacedNode = parentNode.querySelector(`[key="${nodeKey}"]`);
+                      if (replacedNode.attributes['event']?.nodeValue) {
                           setEventListeners(replacedNode);
                       };
                       if (replacedNode.childElementCount > 0) {
-                          let needingListeners = replacedNode.querySelectorAll('[data-event]');
+                          let needingListeners = replacedNode.querySelectorAll('[event]');
                           needingListeners.forEach(child => setEventListeners(child));
                       };
                   };
                   outputChild.remove();
               } else {
-                  const nodeKey = outputChild.dataset.key;
-                  let existentNode = document.querySelector(`[data-key="${nodeKey}"]`);
+                  const nodeKey = outputChild.attributes['key']?.nodeValue;
+                  let existentNode = document.querySelector(`[key="${nodeKey}"]`);
                   existentNode.replaceWith(outputChild);
-                  let replacedNode = document.querySelector(`[data-key="${nodeKey}"]`);
-                  if (replacedNode.dataset.event) {
+                  let replacedNode = document.querySelector(`[key="${nodeKey}"]`);
+                  if (replacedNode.attributes['event']?.nodeValue) {
                       setEventListeners(replacedNode);
                   };
                   if (replacedNode.childElementCount > 0) {
-                      let needingListeners = replacedNode.querySelectorAll('[data-event]');
+                      let needingListeners = replacedNode.querySelectorAll('[event]');
                       needingListeners.forEach(child => setEventListeners(child));
                   };
               };

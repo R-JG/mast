@@ -33,26 +33,26 @@
       ;div.container
         ;div
           =class  (weld "square " color-one.app-state)
-          :: the data-event attribute is where event listeners are specified.
-          :: data-event needs to be formatted as a path
+          :: the event attribute is where event listeners are specified.
+          :: the event attribute needs to be formatted as a path
           :: the first word must correspond to the name of the event listener, minus the "on" prefix.
           :: the listener essentially just sends a poke to your agent with some data.
           :: this tag is then used in your agent to identify the handler for the event poke.
-          =data-event  "/click/square-one"
-          :: the data-return attribute is for specifying what data to return from the event.
+          =event  "/click/square-one"
+          :: the return attribute is for specifying what data to return from the event.
           :: a number of path tags may be specified, separated by whitespace.
           :: there are three options for the beginning of the path: 
           :: 1) "target", for the current target, i.e. the element on which the event was triggered.
           :: 2) "event", for the event object.
           :: 3) anything else corresponding to the id of any element.
           :: the last section in the tag is the property key for the value to return.
-          =data-return  "/target/textContent"
+          =return  "/target/textContent"
           ;+  ;/  color-one.app-state
         ==
         ;div
           =class  (weld "square " color-two.app-state)
-          =data-event  "/click/square-two"
-          =data-return  "/target/textContent"
+          =event  "/click/square-two"
+          =return  "/target/textContent"
           ;+  ;/  color-two.app-state
         ==
       ==
@@ -69,21 +69,21 @@
         ;div;
       ==
       ;input#first-input;
-      ;button(data-event "/click/test-form-submit", data-return "/first-input/value"): submit
-      ;button(data-event "/click/navigate-to-page-two"): navigate
+      ;button(event "/click/test-form-submit", return "/first-input/value"): submit
+      ;button(event "/click/navigate-to-page-two"): navigate
       ;div.container
         ;*  %+  turn  letters.app-state
           |=  [l=@t id=@ud]
           ^-  manx
           ;div
             =class  "smallcircle"
-            =data-key  <id>
+            =key  <id>
             ;+  ;/  (trip l)
           ==
       ==
       ;input#letters-input;
-      ;button(data-event "/click/submit-letters", data-return "/letters-input/value"): Enter letters
-      ;button(data-event "/click/switch-letters"): Switch letters
+      ;button(event "/click/submit-letters", return "/letters-input/value"): Enter letters
+      ;button(event "/click/switch-letters"): Switch letters
     ==
   ==
 ==
