@@ -380,7 +380,7 @@
   let displayUpdatePath;
   let channelMessageId = 0;
   let eventSource;
-  const channelId = `${Date.now()}${Math.floor(Math.random() * 100)}`
+  const channelId = `${Date.now()}${Math.floor(Math.random() * 100)}`;
   const channelPath = `${window.location.origin}/~/channel/${channelId}`;
   addEventListener('DOMContentLoaded', async () => {
       ship = document.documentElement.getAttribute('ship');
@@ -398,6 +398,19 @@
   };
   async function connectToShip() {
       try {
+          const storageKey = `${ship}${app}${displayUpdatePath}`;
+          let storedId = localStorage.getItem(storageKey);
+          localStorage.setItem(storageKey, channelId);
+          if (storedId) {
+              const delPath = `${window.location.origin}/~/channel/${storedId}`;
+              await fetch(delPath, {
+                  method: 'PUT',
+                  body: JSON.stringify([{
+                      id: channelMessageId,
+                      action: 'delete'
+                  }])
+              });
+          };
           const body = JSON.stringify(makeSubscribeBody());
           await fetch(channelPath, { 
               method: 'PUT',
