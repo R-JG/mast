@@ -136,7 +136,7 @@
     $(new t.new, i +(i), acc (snoc acc i.new))
   =/  j=@ud  0
   =/  jold=marl  old
-  =/  nkey=tape  (getv a.g.i.new %key)
+  =/  nkey=[n=mane k=tape]  [n.g.i.new (getv a.g.i.new %key)]
   |-
   ?~  new
     !!
@@ -153,71 +153,87 @@
     !!
   ?:  =(%skip n.g.i.jold)
     $(jold t.jold, j +(j))
-  ?:  .=(nkey (getv a.g.i.jold %key))
+  ?:  .=(nkey [n.g.i.jold (getv a.g.i.jold %key)])
     ?.  =(0 j)
       =/  n=@ud  0
       =/  nnew=marl  new
-      =/  okey=tape  (getv a.g.i.old %key)
+      =/  okey=[n=mane k=tape]  [n.g.i.old (getv a.g.i.old %key)]
       |-
       ?~  nnew
         ^^$(old (snoc t.old i.old))
       ?:  =(%m n.g.i.nnew)
         $(nnew t.nnew, n +(n))
-      =/  nnky=tape  (getv a.g.i.nnew %key)
+      =/  nnky=[n=mane k=tape]  [n.g.i.nnew (getv a.g.i.nnew %key)]
       ?.  .=(okey nnky)
         $(nnew t.nnew, n +(n))
       ?:  (gte n j)
-        ?:  =(g.i.old g.i.nnew)
+        =/  aupd=mart  (upda a.g.i.old a.g.i.nnew)
+        ?~  aupd
           %=  ^^$
             old  c.i.old
             new  c.i.nnew
             i    0
-            acc  
+            acc
               %=  ^^$
                 old  t.old
-                new  (newm new n ;m(id <(add n i)>, key nnky);)
+                new  %^  newm  new  n
+                  ;m(id <(add n i)>, key k.nnky);
               ==
           ==
         %=  ^^$
-          old  t.old
-          new  %^  newm  new  n
-            ;m(id <(add n i)>)
-              ;+  i.nnew
+          old  c.i.old
+          new  c.i.nnew
+          i    0
+          acc
+            %=  ^^$
+              old  t.old
+              new  %^  newm  new  n
+                ;m(id <(add n i)>, key k.nnky);
+              acc  :_  acc
+                [[%c [[%key k.nnky] aupd]] ~]
             ==
         ==
-      ?:  =(g.i.jold g.i.new)
+      =/  aupd=mart  (upda a.g.i.jold a.g.i.new)
+      ?~  aupd
         %=  ^^$
           old  c.i.jold
           new  c.i.new
           i    0
-          acc  
+          acc
             %=  ^^$
               old  (newm old j ;skip;)
               new  t.new
               i    +(i)
               acc  %+  snoc  acc
-                ;m(id <i>, key nkey);
+                ;m(id <i>, key k.nkey);
             ==
         ==
       %=  ^^$
-        old  (newm old j ;skip;)
-        new  t.new
-        i    +(i)
-        acc  %+  snoc  acc
-          ;m(id <i>)
-            ;+  i.new
+        old  c.i.jold
+        new  c.i.new
+        i    0
+        acc
+          %=  ^^$
+            old  (newm old j ;skip;)
+            new  t.new
+            i    +(i)
+            acc  :-  [[%c [[%key k.nkey] aupd]] ~]
+              %+  snoc
+                acc
+              ;m(id <i>, key k.nkey);
           ==
       ==
-    ?:  =(g.i.old g.i.new)
-      ?:  =("mast-text" (getv a.g.i.new %class))
-        ?:  =(+.-.+.-.-.+.-.old +.-.+.-.-.+.-.new)
-          ^$(old t.old, new t.new, i +(i))
-        %=  ^$
-          old  t.old
-          new  t.new
-          i    +(i)
-          acc  [i.new acc]
-        ==
+    ?:  =("text" (getv a.g.i.new %mast))
+      ?:  =(+.-.+.-.-.+.-.old +.-.+.-.-.+.-.new)
+        ^$(old t.old, new t.new, i +(i))
+      %=  ^$
+        old  t.old
+        new  t.new
+        i    +(i)
+        acc  [i.new acc]
+      ==
+    =/  aupd=mart  (upda a.g.i.old a.g.i.new)
+    ?~  aupd
       %=  ^$
         old  c.i.old
         new  c.i.new
@@ -225,10 +241,17 @@
         acc  ^$(old t.old, new t.new, i +(i))
       ==
     %=  ^$
-      old  t.old
-      new  t.new
-      i    +(i)
-      acc  [i.new acc]
+      old  c.i.old
+      new  c.i.new
+      i    0
+      acc
+        %=  ^$
+          old  t.old
+          new  t.new
+          i    +(i)
+          acc  :_  acc
+            [[%c [[%key k.nkey] aupd]] ~]
+        ==
     ==
   $(jold t.jold, j +(j))
 ::
@@ -241,9 +264,10 @@
     =/  fkey=tape  (getv a.g.m %key)
     =/  nkey=tape  ?~(fkey key fkey)
     ?:  =(%$ n.g.m)
-      ;span.mast-text
-        =key  nkey
-        =pkey  pkey
+      ;span
+        =mast  "text"
+        =key    nkey
+        =pkey   pkey
         ;+  m
       ==
     =:  a.g.m  %-  mart  
@@ -274,6 +298,43 @@
   ?:  =(n.i.m tag)
     v.i.m
   $(m t.m)
+::
+++  upda
+  |=  [om=mart nm=mart]
+  =/  acc=mart  ~
+  |-  ^-  mart
+  ?~  nm
+    ?~  om
+      acc
+    :_  acc
+    :-  %rem
+    =/  omom=mart  om
+    |-
+    ?~  omom
+      ~
+    =/  nom=tape  +:<n.i.omom>
+    |-
+    ?~  nom
+      [' ' ^$(omom t.omom)]
+    [i.nom $(nom t.nom)]
+  =/  i=@ud  0
+  =/  com=mart  om
+  |-
+  ?~  nm
+    !!
+  ?~  com
+    ^$(nm t.nm, acc [i.nm acc])
+  ?~  om
+    !!
+  ?:  =(n.i.com n.i.nm)
+    ?:  =(v.i.com v.i.nm)
+      ^$(om (oust [i 1] (mart om)), nm t.nm)
+    %=  ^$
+      om  (oust [i 1] (mart om))
+      nm  t.nm
+      acc  [i.nm acc]
+    ==
+  $(com t.com, i +(i))
 ::
 ++  newm
   |=  [ml=marl i=@ud mx=manx]
@@ -322,18 +383,18 @@
   const channelId = `${Date.now()}${Math.floor(Math.random() * 100)}`
   const channelPath = `${window.location.origin}/~/channel/${channelId}`;
   addEventListener('DOMContentLoaded', async () => {
-      ship = document.documentElement.attributes['ship']?.nodeValue;
-      app = document.documentElement.attributes['app']?.nodeValue;
-      displayUpdatePath = document.documentElement.attributes['path']?.nodeValue;
+      ship = document.documentElement.getAttribute('ship');
+      app = document.documentElement.getAttribute('app');
+      displayUpdatePath = document.documentElement.getAttribute('path');
       await connectToShip();
       let eventElements = document.querySelectorAll('[event]');
       eventElements.forEach(el => setEventListeners(el));
   });
   function setEventListeners(el) {
-      const eventTags = el.attributes['event']?.nodeValue;
-      const returnTags = el.attributes['return']?.nodeValue;
+      const eventTags = el.getAttribute('event');
+      const returnTags = el.getAttribute('return');
       const eventType = eventTags.split('/', 2)[1];
-      el.addEventListener(eventType, (e) => pokeShip(e, eventTags, returnTags));
+      el[`on${eventType}`] = (e) => pokeShip(e, eventTags, returnTags);
   };
   async function connectToShip() {
       try {
@@ -409,26 +470,26 @@
           let container = document.createElement('template');
           container.innerHTML = htmlData;
           if (container.content.firstElementChild.childNodes.length === 0) return;
-          const navUrl = container.content.firstElementChild.attributes['url']?.nodeValue;
+          const navUrl = container.content.firstElementChild.getAttribute('url');
           if (navUrl && (navUrl !== window.location.pathname)) {
               history.pushState({}, '', navUrl);
           };
           while (container.content.firstElementChild.children.length > 0) {
-              let outputChild = container.content.firstElementChild.firstElementChild;
-              if (outputChild.tagName === 'D') {
-                  for (const att of outputChild.attributes) {
-                      const dkey = att.nodeValue;
+              let gustChild = container.content.firstElementChild.firstElementChild;
+              if (gustChild.tagName === 'D') {
+                  for (const att of gustChild.attributes) {
+                      const dkey = att.value;
                       document.querySelector(`[key="${dkey}"]`).remove();
                   };
-                  outputChild.remove();
-              } else if (outputChild.tagName === 'N') {
-                  const nodeKey = outputChild.firstElementChild.attributes['key']?.nodeValue;
-                  const parentKey = outputChild.firstElementChild.attributes['pkey']?.nodeValue;
-                  const appendIndex = outputChild.id;
+                  gustChild.remove();
+              } else if (gustChild.tagName === 'N') {
+                  const nodeKey = gustChild.firstElementChild.getAttribute('key');
+                  const parentKey = gustChild.firstElementChild.getAttribute('pkey');
+                  const appendIndex = gustChild.id;
                   let domParent = document.querySelector(`[key="${parentKey}"]`);
-                  domParent.insertBefore(outputChild.firstElementChild, domParent.children[appendIndex]);
+                  domParent.insertBefore(gustChild.firstElementChild, domParent.children[appendIndex]);
                   let appendedChild = domParent.querySelector(`[key="${nodeKey}"]`);
-                  if (appendedChild.attributes['event']?.nodeValue) {
+                  if (appendedChild.getAttribute('event')) {
                       setEventListeners(appendedChild);
                   };
                   if (appendedChild.childElementCount > 0) {
@@ -436,36 +497,42 @@
                       needingListeners.forEach(child => setEventListeners(child));
                   };
                   appendedChild = appendedChild.nextElementSibling;
-                  outputChild.remove();
-              } else if (outputChild.tagName === 'M') {
-                  const needsUpdate = outputChild.hasChildNodes();
-                  const nodeKey = needsUpdate 
-                    ? outputChild.firstElementChild.attributes['key']?.nodeValue
-                    : outputChild.attributes['key']?.nodeValue;
-                  const nodeIndex = outputChild.id;
+                  gustChild.remove();
+              } else if (gustChild.tagName === 'M') {
+                  const nodeKey = gustChild.getAttribute('key');
+                  const nodeIndex = gustChild.id;
                   let existentNode = document.querySelector(`[key="${nodeKey}"]`);
-                  let parentNode = existentNode.parentElement;
-                  let childAtIndex = parentNode.children[nodeIndex];
-                  parentNode.insertBefore(existentNode, childAtIndex);
-                  if (needsUpdate) {
-                      let movedNode = parentNode.querySelector(`[key="${nodeKey}"]`);
-                      movedNode.replaceWith(outputChild.firstElementChild);
-                      let replacedNode = parentNode.querySelector(`[key="${nodeKey}"]`);
-                      if (replacedNode.attributes['event']?.nodeValue) {
-                          setEventListeners(replacedNode);
+                  let childAtIndex = existentNode.parentElement.children[nodeIndex];
+                  existentNode.parentElement.insertBefore(existentNode, childAtIndex);
+                  gustChild.remove();
+              } else if (gustChild.tagName === 'C') {
+                  const nodeKey = gustChild.getAttribute('key');
+                  const attToRem = gustChild.getAttribute('rem')?.slice(0, -1).split(' ') ?? [];
+                  let existentNode = document.querySelector(`[key="${nodeKey}"]`);
+                  attToRem.forEach(att => {
+                      if (att === 'event') {
+                          const eventType = existentNode.getAttribute('event').split('/', 2)[1];
+                          existentNode[`on${eventType}`] = null;
                       };
-                      if (replacedNode.childElementCount > 0) {
-                          let needingListeners = replacedNode.querySelectorAll('[event]');
-                          needingListeners.forEach(child => setEventListeners(child));
+                      existentNode.removeAttribute(att);
+                  });
+                  gustChild.removeAttribute('key');
+                  gustChild.removeAttribute('rem');
+                  for (const att of gustChild.attributes) {
+                      existentNode.setAttribute(att.name, att.value);
+                      if (att.name === 'event') {
+                          const eventType = existentNode.getAttribute('event').split('/', 2)[1];
+                          existentNode[`on${eventType}`] = null;
+                          setEventListeners(existentNode);
                       };
                   };
-                  outputChild.remove();
+                  gustChild.remove();
               } else {
-                  const nodeKey = outputChild.attributes['key']?.nodeValue;
+                  const nodeKey = gustChild.getAttribute('key');
                   let existentNode = document.querySelector(`[key="${nodeKey}"]`);
-                  existentNode.replaceWith(outputChild);
+                  existentNode.replaceWith(gustChild);
                   let replacedNode = document.querySelector(`[key="${nodeKey}"]`);
-                  if (replacedNode.attributes['event']?.nodeValue) {
+                  if (replacedNode.getAttribute('event')) {
                       setEventListeners(replacedNode);
                   };
                   if (replacedNode.childElementCount > 0) {
