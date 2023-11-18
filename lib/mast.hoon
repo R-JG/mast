@@ -1,109 +1,99 @@
 |%
-+$  yard  [url=@t sail=gate]
++$  view  manx
++$  yard  [url=path sail=gate]
 +$  yards  (list yard)
-+$  parsed-request  [tags=path data=(map @t @t)]
++$  parsed-req  [tags=path data=(map @t @t)]
 :: :: :: ::
 ::
 ::  Server 
 ::
 :: :: :: ::
+++  rig
+  |*  [=yards url=path app-state=*]
+  ?~  yards
+    (adky (manx sail-404))
+  ?:  =(url url.i.yards)
+    =/  rigd  (adky (manx (sail.i.yards app-state)))
+    rigd(a.g (mart [[%url (path <url>)] a.g.rigd]))
+  $(yards t.yards)
+::
 ++  plank
-  |=  [eyre-id=@ta ship=@p app-name=tape display-update-path=tape display-state=manx]
+  |=  [app=tape sub=path ship=@p rid=@ta new=view]
   ^-  (list card:agent:gall)
-  ?~  c.display-state  !!
-  =/  ship-name  (scow %p ship)
-  %^  make-direct-http-cards  eyre-id
+  ?~  c.new  !!
+  %^  make-direct-http-cards  rid
     [200 ['Content-Type' 'text/html'] ~]
   :-  ~
   ^-  octs
   %-  as-octt:mimes:html
   %-  en-xml:html
   ^-  manx
-  %=  display-state
+  %=  new
     a.g  %-  mart  :^  
-      [%ship +.ship-name] 
-      [%app app-name] 
-      [%path display-update-path] 
-      a.g.display-state
-    c.i.c  (marl [script-node c.i.c.display-state])
+      [%app app] 
+      [%path <(path sub)>]
+      [%ship +:(scow %p ship)]
+      a.g.new
+    c.i.c  (marl [script-node c.i.c.new])
   ==
 ::
-++  parse
-  |=  j=json
-  ^-  parsed-request
-  %-  (ot ~[tags+pa data+(om so)]):dejs:format  j
-::
-++  rig
-  |*  [=yards target-url=@t app-state=*]
-  ?~  yards
-    (adky (manx sail-404))
-  ?:  =(target-url url.i.yards)
-    =/  rigd  (adky (manx (sail.i.yards app-state)))
-    rigd(a.g (mart [[%url (trip target-url)] a.g.rigd]))
-  $(yards t.yards)
-::
 ++  gust
-  |=  [display-update-path=path current-display-state=manx new-display-state=manx]
+  |=  [sub=path old=view new=view]
   ^-  card:agent:gall
-  ?~  c.new-display-state  !!
-  ?~  t.c.new-display-state  !!
-  ?~  c.current-display-state  !!
-  ?~  t.c.current-display-state  !!
-  ?~  a.g.new-display-state  !!
-  %+  make-channel-update-card
-    display-update-path
+  ?~  c.new  !!
+  ?~  t.c.new  !!
+  ?~  c.old  !!
+  ?~  t.c.old  !!
+  ?~  a.g.new  !!
+  :^  %give  %fact  ~[sub]
+  :-  %json
+  !>  %-  tape:enjs:format
   %-  en-xml:html
   ^-  manx
   ;g
-    =url  v.i.a.g.new-display-state
+    =url  v.i.a.g.new
     ;*  %+  algo
-      c.i.t.c.current-display-state
-    c.i.t.c.new-display-state
+      c.i.t.c.old
+    c.i.t.c.new
   ==
 ::
-++  make-channel-update-card
-  |=  [sub-path=path html-data=tape]
-  ^-  card:agent:gall
-  =/  data-cage  [%json !>((tape:enjs:format html-data))]
-  [%give %fact ~[sub-path] data-cage]
-::
-++  make-direct-http-cards
-  |=  [eyre-id=@ta reshead=response-header.simple-payload:http resdata=(unit octs)]
-  ^-  (list card:agent:gall)
-  =/  header-cage  [%http-response-header !>(reshead)]
-  =/  data-cage  [%http-response-data !>(resdata)]
-  :~  [%give %fact ~[/http-response/[eyre-id]] header-cage]
-      [%give %fact ~[/http-response/[eyre-id]] data-cage]
-      [%give %kick ~[/http-response/[eyre-id]] ~]
-  ==
+++  parse-json
+  |=  j=json
+  ^-  parsed-req
+  %-  (ot ~[tags+pa data+(om so)]):dejs:format  j
 ::
 ++  make-css-response
-  |=  [eyre-id=@ta css=@t]
+  |=  [rid=@ta css=@t]
   ^-  (list card:agent:gall)
-  %^  make-direct-http-cards  eyre-id 
+  %^  make-direct-http-cards  rid 
     [200 ['Content-Type' 'text/css'] ~]
   [~ (as-octs:mimes:html css)]
 ::
 ++  make-auth-redirect
-  |=  eyre-id=@ta
+  |=  rid=@ta
   ^-  (list card:agent:gall)
-  %^  make-direct-http-cards  eyre-id
-    [307 ['Location' '/~/login?redirect='] ~]
-  ~
+  %^  make-direct-http-cards  rid
+  [307 ['Location' '/~/login?redirect='] ~]  ~
 ::
 ++  make-400
-  |=  eyre-id=@ta
+  |=  rid=@ta
   ^-  (list card:agent:gall)
-  %^  make-direct-http-cards  eyre-id 
-    [400 ~]
-  ~
+  %^  make-direct-http-cards
+  rid  [400 ~]  ~
 ::
 ++  make-404
-  |=  [eyre-id=@ta resdata=(unit octs)]
+  |=  [rid=@ta data=(unit octs)]
   ^-  (list card:agent:gall)
-  %^  make-direct-http-cards  eyre-id
-    [404 ~]
-  resdata
+  %^  make-direct-http-cards
+  rid  [404 ~]  data
+::
+++  make-direct-http-cards
+  |=  [rid=@ta head=response-header.simple-payload:http data=(unit octs)]
+  ^-  (list card:agent:gall)
+  :~  [%give %fact ~[/http-response/[rid]] [%http-response-header !>(head)]]
+      [%give %fact ~[/http-response/[rid]] [%http-response-data !>(data)]]
+      [%give %kick ~[/http-response/[rid]] ~]
+  ==
 :: :: :: ::
 ::
 :: Algorithms
