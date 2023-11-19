@@ -15,6 +15,3 @@ Additionally, in your sail components, you may add data tags on elements specify
 Display updates do not need to be in response to an event from the client, though. Your ship can stream updates to the browser as an effect of any state change in the agent.
 
 Check out the example app for more details.
-
-***
-License: MIT

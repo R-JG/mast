@@ -1,3 +1,42 @@
+:: :: :: ::
+::
+::  Mast  -  a Sail framework
+::
+::  [v.1.0.0]
+::
+::  
+::  This library contains a system for building fully dynamic sail front-ends
+::  where all front-end app state and the current state of the display itself
+::  live on your ship.
+::
+::  A small script that is generic to any application is inserted into your sail
+::  and used to establish an Eyre channel, receive display updates from your ship, 
+::  and to sync the browser with them.
+::  
+::  Events on the browser are handled completely within your ship, 
+::  without the need to write a single line of JavaScript.
+::  You may describe events in your Sail components with attributes like this:
+::    =event  "/click/..."
+::  The first segment of the path is the event listener name, 
+::  with further segments defining an arbitrary endpoint for an event handler on your agent.
+::  Events are sent as pokes under a json mark, which can be parsed with the library.
+::  You may also return data from the event like this:
+::    =return  "/target/value"
+::  The first segment is the object to return data from, and the second is the property to return.
+::  Data can be returned from the target element, event object, or any other element associated by id.
+::  
+::  When the display state changes as a result of events initiated on the browser,
+::  or from any other kind of event in the agent, updates to the browser containing 
+::  only the necessary amount of html to achieve this state are sent and swapped in.
+::  
+::  
+::  The the server section contains all of the arms for usage in your app. 
+::  Rig, plank, and gust are the main arms.
+::  See the description of these arms below.
+::
+::  For more details visit: https://github.com/R-JG/mast
+::
+:: :: :: ::
 |%
 +$  view  manx
 +$  yard  [url=path sail=gate]
