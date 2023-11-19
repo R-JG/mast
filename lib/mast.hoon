@@ -10,9 +10,20 @@
 :: :: :: ::
 ++  rig
   |*  [=yards url=path app-state=*]
+  ^-  view
   ?~  yards
     (adky (manx sail-404))
-  ?:  =(url url.i.yards)
+  =/  yurl=path  url.i.yards
+  ?:  |-
+      ?~  url
+        %.n
+      ?~  yurl
+        %.n
+      ?.  |(=(i.url i.yurl) =(%$ i.yurl))
+        %.n
+      ?:  &(=(~ t.url) =(~ t.yurl))
+        %.y
+      $(url t.url, yurl t.yurl)
     =/  rigd  (adky (manx (sail.i.yards app-state)))
     rigd(a.g (mart [[%url (path <url>)] a.g.rigd]))
   $(yards t.yards)
@@ -40,10 +51,10 @@
 ++  gust
   |=  [sub=path old=view new=view]
   ^-  card:agent:gall
-  ?~  c.new  !!
-  ?~  t.c.new  !!
   ?~  c.old  !!
+  ?~  c.new  !!
   ?~  t.c.old  !!
+  ?~  t.c.new  !!
   ?~  a.g.new  !!
   :^  %give  %fact  ~[sub]
   :-  %json
