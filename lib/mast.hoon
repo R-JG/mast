@@ -47,6 +47,18 @@
 ::  Server 
 ::
 :: :: :: ::
+::
+::  - The rig arm is used to produce a new instance of the display state.
+::  - "yards" is the list of your app's routes, each corresponding to a root level Sail component
+::    (i.e. a complete html document with head and body tags).
+::  - "url" is either the request url from eyre in the context of a direct http request,
+::    or the current url (this should be saved in state).
+::  - "app-state" represents the total sample for each of your root level Sail components 
+::    (currently, root level Sail components in yards each need to take the same sample).
+::  - Rig uses the url to select the matching yard and renders its Sail component.
+::  - The newly produced display state should then be used with either plank or gust,
+::    and saved as the current display state in the agent.
+::
 ++  rig
   |*  [=yards url=path app-state=*]
   ^-  view
@@ -67,6 +79,16 @@
     rigd(a.g (mart [[%url (path <url>)] a.g.rigd]))
   $(yards t.yards)
 ::
+::  - The plank arm is used for serving whole pages in response to %handle-http-request pokes,
+::    acting as the first point of contact for the app.
+::  - Plank needs to take some basic information about the page that you are serving:
+::  - "app" is the name of the app,
+::  - "sub" is the subscription path that the client will subscribe to for receiving display updates,
+::  - "ship" is your patp,
+::  - "rid" is the eyre id from the %handle-http-request poke,
+::  - "new" is the newly rendered display state that you have produced with rig.
+::  - Plank produces a list of cards serving the http response.
+::    
 ++  plank
   |=  [app=tape sub=path ship=@p rid=@ta new=view]
   ^-  (list card:agent:gall)
@@ -87,6 +109,14 @@
     c.i.c  (marl [script-node c.i.c.new])
   ==
 ::
+::  - The gust arm is used for producing a set of display updates for the browser.
+::  - "sub" is the subscription path that was sent initially in plank, by which gust will send the updates.
+::  - "old" is the display state that is currently saved in your agent's state, produced previously by rig.
+::  - "new" is the display that you'd produce with rig just before using gust.
+::  - While plank needs to be used only when handling direct http from eyre, 
+::    gust can be used anywhere you'd produce a subscription update.
+::  - Gust produces a single card.
+::  
 ++  gust
   |=  [sub=path old=view new=view]
   ^-  card:agent:gall
