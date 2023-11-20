@@ -5,17 +5,17 @@
 ::  [v.1.0.0]
 ::
 ::  
-::  This library contains a system for building fully dynamic sail front-ends
+::  This library contains a system for building fully dynamic Sail front-ends
 ::  where all front-end app state and the current state of the display itself
 ::  live on your ship.
 ::
-::  A small script that is generic to any application is inserted into your sail
+::  A small script that is generic to any application is inserted into your Sail
 ::  and used to establish an Eyre channel, receive display updates from your ship, 
 ::  and to sync the browser with them.
 ::  
 ::  Events on the browser are handled completely within your ship, 
 ::  without the need to write a single line of JavaScript.
-::  You may describe events in your Sail components with attributes like this:
+::  You may describe event listeners in your Sail components with attributes like this:
 ::    =event  "/click/..."
 ::  The first segment of the path is the event listener name, 
 ::  with further segments defining an arbitrary endpoint for an event handler on your agent.
@@ -30,9 +30,8 @@
 ::  only the necessary amount of html to achieve this state are sent and swapped in.
 ::  
 ::  
-::  The the server section contains all of the arms for usage in your app. 
-::  Rig, plank, and gust are the main arms.
-::  See the description of these arms below.
+::  The server section contains all of the arms for usage in your app.
+::  Rig, plank, and gust are the main arms. See the description of these arms below.
 ::
 ::  For more details visit: https://github.com/R-JG/mast
 ::
@@ -50,8 +49,8 @@
 ::
 ::  - The rig arm is used to produce a new instance of the display state.
 ::  - "yards" is the list of your app's routes, each corresponding to a root level Sail component
-::    (i.e. a complete html document with head and body tags).
-::  - "url" is either the request url from eyre in the context of a direct http request,
+::    (i.e. a complete document with html, head, and body tags).
+::  - "url" is either the request url from Eyre in the context of a direct http request,
 ::    or the current url (this should be saved in state).
 ::  - "app-state" represents the total sample for each of your root level Sail components 
 ::    (currently, root level Sail components in yards each need to take the same sample).
@@ -85,8 +84,8 @@
 ::  - "app" is the name of the app,
 ::  - "sub" is the subscription path that the client will subscribe to for receiving display updates,
 ::  - "ship" is your patp,
-::  - "rid" is the eyre id from the %handle-http-request poke,
-::  - "new" is the newly rendered display state that you have produced with rig.
+::  - "rid" is the Eyre id from the %handle-http-request poke,
+::  - "new" is the newly rendered display state produced with rig.
 ::  - Plank produces a list of cards serving the http response.
 ::    
 ++  plank
@@ -109,12 +108,13 @@
     c.i.c  (marl [script-node c.i.c.new])
   ==
 ::
-::  - The gust arm is used for producing a set of display updates for the browser.
-::  - "sub" is the subscription path that was sent initially in plank, by which gust will send the updates.
-::  - "old" is the display state that is currently saved in your agent's state, produced previously by rig.
-::  - "new" is the display that you'd produce with rig just before using gust.
-::  - While plank needs to be used only when handling direct http from eyre, 
-::    gust can be used anywhere you'd produce a subscription update.
+::  - The gust arm is used for producing a set of display updates for the browser,
+::    used typically after making changes to your app's state, and rendering new display data with rig. 
+::  - "sub" is the subscription path that was sent initially in plank, where gust will send the updates.
+::  - "old" is the display state that is currently saved in your agent's state, 
+::    produced some time previously by rig.
+::  - "new" is the new display data to be produced with rig just before gust gets used.
+::  - Gust can be used anywhere you'd make a subscription update (in contrast to plank).
 ::  - Gust produces a single card.
 ::  
 ++  gust
