@@ -59,7 +59,7 @@
       [(make-auth-redirect:mast eyre-id) state]
     ?+  method.request.req  [(make-400:mast eyre-id) state]
       %'GET'
-        =/  url=path  (stab url.request.req)
+        =/  url=path  (parse-url:mast url.request.req)
         :: css ought to be linked to from the head of the sail document, and can be handled like this:
         ?:  =(/example-app/css url)
           [(make-css-response:mast eyre-id example-stylesheet) state]

@@ -2,7 +2,7 @@
 ::
 ::  Mast  -  a Sail framework
 ::
-::  [v.1.0.0]
+::  [v.1.0.1]
 ::
 ::  
 ::  This library contains a system for building fully dynamic Sail front-ends
@@ -141,6 +141,11 @@
   |=  j=json
   ^-  parsed-req
   %-  (ot ~[tags+pa data+(om so)]):dejs:format  j
+::
+++  parse-url
+  |=  url=@t
+  ^-  path
+  %-  paru  (trip url)
 ::
 ++  make-css-response
   |=  [rid=@ta css=@t]
@@ -413,9 +418,29 @@
   ?~  ml
     ~
   :-  ?:  =(i j)
-      mx 
-    i.ml 
+      mx
+    i.ml
   $(ml t.ml, j +(j))
+::
+++  paru
+  |=  turl=tape
+  ^-  path
+  =/  tacc=tape  ~
+  =/  pacc=path  ~
+  |-
+  ?~  turl
+    ?~  tacc
+      pacc
+    (snoc pacc (crip tacc))
+  ?:  =('/' i.turl)
+    ?~  tacc
+      $(turl t.turl)
+    %=  $
+      turl  t.turl
+      tacc  ~
+      pacc  (snoc pacc (crip tacc))
+    ==
+  $(turl t.turl, tacc (snoc tacc i.turl))
 :: :: :: ::
 ::
 ::  Sail 
@@ -463,8 +488,10 @@
   function setEventListeners(el) {
       const eventTags = el.getAttribute('event');
       const returnTags = el.getAttribute('return');
-      const eventType = eventTags.split('/', 2)[1];
-      el[`on${eventType}`] = (e) => pokeShip(e, eventTags, returnTags);
+      eventTags.split(/\s+/).forEach(eventStr => {
+          const eventType = eventStr.split('/', 2)[1];
+          el[`on${eventType}`] = (e) => pokeShip(e, eventStr, returnTags);
+      });
   };
   async function connectToShip() {
       try {
@@ -586,7 +613,13 @@
                   const nodeIndex = gustChild.id;
                   let existentNode = document.querySelector(`[key="${nodeKey}"]`);
                   let childAtIndex = existentNode.parentElement.children[nodeIndex];
-                  existentNode.parentElement.insertBefore(existentNode, childAtIndex);
+                  if (existentNode.nextElementSibling 
+                  && (existentNode.nextElementSibling.getAttribute('key') 
+                  === childAtIndex.getAttribute('key'))) {
+                      existentNode.parentElement.insertBefore(existentNode, childAtIndex.nextElementSibling);
+                  } else {
+                      existentNode.parentElement.insertBefore(existentNode, childAtIndex);
+                  };
                   gustChild.remove();
               } else if (gustChild.tagName === 'C') {
                   const nodeKey = gustChild.getAttribute('key');
