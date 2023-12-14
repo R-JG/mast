@@ -47,19 +47,19 @@
 ::
 :: :: :: ::
 ::
-::  - The rig arm is used to produce a new instance of the display state.
+::  - the rig arm is used to produce a new instance of the display state.
 ::  - "yards" is the list of your app's routes, each corresponding to a root level Sail component
 ::    (i.e. a complete document with html, head, and body tags).
 ::  - "url" is either the request url from Eyre in the context of a direct http request,
 ::    or the current url (this should be saved in state).
-::  - "app-state" represents the total sample for each of your root level Sail components 
+::  - "sail-sample" represents the total sample for each of your root level Sail components 
 ::    (currently, root level Sail components in yards each need to take the same sample).
-::  - Rig uses the url to select the matching yard and renders its Sail component.
-::  - The newly produced display state should then be used with either plank or gust,
+::  - rig uses the url to select the matching yard and renders its Sail component.
+::  - the newly produced display state should then be used with either plank or gust,
 ::    and saved as the current display state in the agent.
 ::
 ++  rig
-  |*  [=yards url=path app-state=*]
+  |*  [=yards url=path sail-sample=*]
   ^-  view
   ?~  yards
     (adky (manx sail-404))
@@ -74,19 +74,19 @@
       ?:  &(=(~ t.url) =(~ t.yurl))
         %.y
       $(url t.url, yurl t.yurl)
-    =/  rigd  (adky (manx (sail.i.yards app-state)))
+    =/  rigd  (adky (manx (sail.i.yards sail-sample)))
     rigd(a.g (mart [[%url (path <url>)] a.g.rigd]))
   $(yards t.yards)
 ::
-::  - The plank arm is used for serving whole pages in response to %handle-http-request pokes,
+::  - the plank arm is used for serving whole pages in response to %handle-http-request pokes,
 ::    acting as the first point of contact for the app.
-::  - Plank needs to take some basic information about the page that you are serving:
+::  - plank needs to take some basic information about the page that you are serving:
 ::  - "app" is the name of the app,
 ::  - "sub" is the subscription path that the client will subscribe to for receiving display updates,
 ::  - "ship" is your patp,
 ::  - "rid" is the Eyre id from the %handle-http-request poke,
 ::  - "new" is the newly rendered display state produced with rig.
-::  - Plank produces a list of cards serving the http response.
+::  - plank produces a list of cards serving the http response.
 ::    
 ++  plank
   |=  [app=tape sub=path ship=@p rid=@ta new=view]
@@ -108,14 +108,14 @@
     c.i.c  (marl [script-node c.i.c.new])
   ==
 ::
-::  - The gust arm is used for producing a set of display updates for the browser,
+::  - the gust arm is used for producing a set of display updates for the browser,
 ::    used typically after making changes to your app's state, and rendering new display data with rig. 
 ::  - "sub" is the subscription path that was sent initially in plank, where gust will send the updates.
 ::  - "old" is the display state that is currently saved in your agent's state, 
 ::    produced some time previously by rig.
 ::  - "new" is the new display data to be produced with rig just before gust gets used.
-::  - Gust can be used anywhere you'd make a subscription update (in contrast to plank).
-::  - Gust produces a single card.
+::  - gust can be used anywhere you'd make a subscription update (in contrast to plank).
+::  - gust produces a single card.
 ::  
 ++  gust
   |=  [sub=path old=view new=view]

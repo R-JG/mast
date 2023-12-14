@@ -4,7 +4,7 @@
 ;html
   ;head
     ;meta(charset "utf-8");
-    ;link(href "/example-app/css", rel "stylesheet");
+    ;link(href "/example-agent/css", rel "stylesheet");
   ==
   ;body
     ;main
