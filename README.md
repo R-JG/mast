@@ -22,13 +22,13 @@ All that is needed to use Mast is the /lib/mast.hoon file.
 
 ## Usage
 
-> Note: check out the lib file and the example app for more detailed information.
+> Note: check out the /lib file and the example app for more detailed information.
 
 ### In your agent 🤖
 
-First, you will need to define your app's routes as `(list [path gate])` where the gates are your root-level Sail components, i.e. gates which produce a complete document with html, head, and body tags.
+First, you will need to define your app's routes as `(list [path gate])` where the gates are your root-level Sail components, i.e. gates which produce `manx` containing a complete document with `<html>`, `<head>`, and `<body>` tags.
 
-> Note: you will also need to bind the base url, e.g. /example-app, with arvo in order to access your app from the client.
+> Note: you will also need to bind the base url segment for your app with arvo in order to access it from the client.
 
 #### ++ on-poke
 
