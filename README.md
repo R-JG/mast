@@ -44,7 +44,7 @@ The `plank` arm is used to serve any of the pages in your routes list according 
 
 ##### %json
 
-Events from the client are handled in on-poke under the %json mark.
+Events from the client are handled in on-poke under the `%json` mark.
 
 The json data can be parsed with the `parse-json` arm in Mast into `[tags=path data=(map @t @t)]`.
 
@@ -66,7 +66,9 @@ There are three special element attributes that Mast uses: `event`, `return`, an
 
 #### The event attribute
 
-The `event` attribute lets you specify event listeners on elements. Its format is a path where the first segment is the name of the event listener minus the "on" prefix, followed by any number of segments which, along with the first segment, identify the event handler in the agent (see the %json mark section).
+The `event` attribute lets you specify event listeners on elements. In Mast, all that an event listener on the client does is poke your agent, leaving the entirety of the event handling to be done in your ship which is where your app's display state lives.
+
+Event attributes are formatted as a path where the first segment is the name of the event listener minus the "on" prefix, followed by any number of segments which, along with the first segment, identify the event handler in the agent (see the `%json` mark section).
 
 For example:
 
@@ -80,7 +82,10 @@ For example:
 
 #### The return attribute
 
-The `return` attribute lets you to specify what data to return from the event. A number of paths may be specified, separated by whitespace. There are three options for the beginning of the path:
+The `return` attribute lets you to specify what data to return from the event. 
+
+A number of paths may be specified, separated by whitespace. The first segment of the path refers to the object on the client to return data from. There are three options:
+
 1) `"/target/..."` for the current target, i.e. the element on which the event was triggered,
 2) `"/event/..."` for the event object,
 3) `"/your-element-id/..."` for any other element by id.
@@ -91,15 +96,15 @@ The second segment of the path is the property to return from the object. For ex
 
 #### The key attribute
 
-The `key` attribute is not necessary to use, but it is best practice when you have a list of elements that will change, e.g. when you are dynamically generating elements with `turn`.
+The `key` attribute is not necessary to use, but it is best practice when you have a list of elements that will change, for example: when you are dynamically generating elements with `turn`.
 
-A `key` is a globally unique value which identifies the element (two distinct elements in your Sail shouldn't ever have the same key). Mast adds location based keys to your elements by default, but when you provide information about the identity of the element by specifying the `key`, it allows Mast to make more efficient display updates.
+A `key` is a globally unique value which identifies the element (two distinct elements in your Sail should never have the same key). Mast adds location based keys to your elements by default, but when you provide information about the identity of the element by specifying the `key`, it allows Mast to make more efficient display updates.
 
 ### Tips and tricks 💡
 
 #### Handling CSS
 
-You should serve any CSS for your front-end in `%handle-http-request`, separate from your Sail components. Adding large amounts of CSS to your Sail will slow your app down. See the example agent for an example of how to serve CSS from the agent.
+You should serve any CSS for your front-end in `%handle-http-request`, separate from your Sail components. Adding large amounts of CSS directly in your Sail will slow your app down. See the example agent for an example of how to serve CSS from the agent.
 
 #### Implementing forms
 
@@ -127,9 +132,9 @@ As a side note, one strategy for making the inputs on the client reset their val
 
 #### Dynamic route segments
 
-In your list of routes, you can make a segment variable by using a buc: `/$`. When you do this, `rig` will always match with that segment. This means that you can define routes in your list such as: `/example/items/$` and if a url matches the first two segments and has one more segment of any value, it will match and select the route. In `%handle-http-request` you can check for the value of this segment and apply the relevant state updates before rendering the display and sending it with `plank`.
+In your list of routes, you can make a segment variable by using a buc: `/$`. When you do this, `rig` will always match with that segment. This means that you can define routes in your list such as: `/example/items/$` and if a url matches the first two segments and has one more segment of any value, it will match and select the route. Under `%handle-http-request` you can check for the value of this segment and apply any relevant state updates before rendering the display and sending it with `plank`.
 
-Another use case is that a custom 404 page can be supplied by adding a catch-all route with `$` to the end of your route list (in the absence of this `rig` will send a default 404 page).
+Another use case is that a custom 404 page can be supplied by adding a catch-all route with `$` after the base segment, e.g. `/my-app/$`, to the end of your route list (in the absence of this `rig` will send a default 404 page).
 
 #### Navigation
 
@@ -152,5 +157,6 @@ An interesting issue can arise when you want to specify events on dynamically ge
 - There is a bug with table related semantic HTML elements where display updates for these elements won't work in certain cases. This can be avoided by just using divs and styling them in the manner of a table.
 - If a key attribute begins or ends with double quotes (actual quote characters in the beginning or end of the attribute tape, not the double quote syntax which defines a tape) the key will not work.
 - If an element has a child list that is over 1000, there will be problems.
+- Currently, you might encounter issues with any title or script element that you include in the head tag.
 
 If you find any other issues, let me know!
