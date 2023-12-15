@@ -36,9 +36,10 @@
           :: --- event attributes ---
           :: the event attribute is where event listeners are specified.
           :: the event attribute needs to be formatted as a path
-          :: the first word must correspond to the name of the event listener, minus the "on" prefix.
+          :: the first segment must correspond to the name of the event listener, minus the "on" prefix.
           :: the listener essentially just sends a poke to your agent with some data.
-          :: this tag is then used in your agent to identify the handler for the event poke.
+          :: the first segment, along with the following segments, 
+          :: are then used in your agent to identify the handler for the event poke.
           =event  "/click/square-one"
           ::
           :: --- return attributes ---
