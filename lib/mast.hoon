@@ -1,4 +1,7 @@
-|%  ::  keel  deck  hull  spar  yard  
+|%
+::
++$  crow                ::  ::  ::  mast event poke data
+  [=path data=(map @t @t)]
 ::
 +$  prow                ::  ::  ::  mast init data
   $:  urth=?            ::  > are you serving to earth?
@@ -9,8 +12,8 @@
 +$  rig
   $:  urth=?
       =made:neo
+      base-sub=path
       open-http=(map @p @ta)  :: eyre ids of http requests pending session creation
-      sessions=(map @p manx)  :: does saga make this redundant?
   ==
 ::
 --
