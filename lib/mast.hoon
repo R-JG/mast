@@ -9,7 +9,7 @@
       =made:neo         ::  > the +$made mast uses to spawn your ui shrubs
   ==
 ::
-+$  rig
++$  rig                 ::  ::  ::  mast state
   $:  urth=?
       =made:neo
       base-sub=path

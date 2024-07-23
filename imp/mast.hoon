@@ -7,7 +7,7 @@
 ++  kids
   :+  ~  %y
   %-  my
-  :~  [[|/%p |] [%pro %manx] (sy %sig ~)]
+  :~  [[|/%p &] [%pro %manx] (sy %sig ~)] :: fix
       [[&/%aft |/%p |] [%pro %manx] ~]
   ==
 ++  deps   *deps:neo
@@ -31,11 +31,13 @@
       ==
     :_  sig/!>(rig)
     :~  [pith %poke eyre-req/!>(req)]
+        [(snoc here.bowl p/ship.src.bowl) %make made.rig]  :: temporary
     ==
   ::
   ++  poke
     |=  [sud=stud:neo vaz=vase]
     ^-  (quip card:neo pail:neo)
+    ~&  mast-poke/sud
     =+  !<(=rig:mast q.pail)
     ?+  sud  ~|(bad-stud/sud !!)
       ::
@@ -52,13 +54,16 @@
           :_  pail
           (~(make-403 res bowl) rid)
         =/  jig=(unit idea:neo)
-          (~(get of:neo kids.bowl) (snoc here.bowl p/ship.src.bowl))
+          =/  g  (~(get by kid.kids.bowl) p/ship.src.bowl)
+          ?~  g  ~
+          fil.u.g
         ?~  jig
           =.  open-http.rig
             (~(put by open-http.rig) ship.src.bowl rid)
+          ~&  open-http/rid
           :_  sig/!>(rig)
           :~  [(snoc here.bowl p/ship.src.bowl) %make made.rig]
-          ==        
+          ==
         =/  sail=manx
           (hoist !<(manx q.pail.u.jig))
         :_  pail
@@ -89,6 +94,7 @@
         =/  rid=(unit @ta)
           (~(get by open-http.rig) boat)
         ?^  rid
+          ~&  close-http/u.rid
           %=  $
             open-http.rig  (~(del by open-http.rig) boat)
             rum            t.rum
@@ -159,7 +165,7 @@
     %_    sail
         a.g
       ^-  mart
-      :*  [%pith <^-(path /mast/(@t (rear here.bowl)))>]  :: destination path to shrub (temporary solution, not good)
+      :*  [%pith <^-(path ?>(?=(^ here.bowl) (pout:neo t.here.bowl)))>]  :: destination path to shrub from neo
           [%app "neo"] 
           [%path <^-(path (snoc base-sub.rig (scot %p ship.src.bowl)))>]  :: sub path, shrub to eyre
           [%ship +:(scow %p our.bowl)]
@@ -186,11 +192,7 @@
     :-  (snoc base-sub.rig (scot %p ship.src.bowl))
     %-  tape:enjs:format
     %-  en-xml:html
-    ~&  >>
-      :-  'gust:'
-      %+  algo
-        c.i.t.c.old
-      c.i.t.c.new
+    :: ~&  >>  gust/(algo c.i.t.c.old c.i.t.c.new)
     ^-  manx
     ;g
       =url  v.i.a.g.new
