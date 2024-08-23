@@ -2,7 +2,9 @@
 
 Mast is a front-end model inspired by HTMX. It is also quite different from it. Mast takes the idea of applying minimal updates to the DOM with content rendered on the server, but instead of the developer writing swap logic, a diffing algorithm automatically creates the update and pushes it through an Eyre SSE channel to the Mast script on the browser which then executes the swaps. In addition to this, Mast's event attributes let you specify event listeners on elements such that the triggered events are poked into handlers in your ship, meaning that all of your client-side interface logic can be implemented in Hoon, within Urbit.
 
-In this updated version, Mast can be used to serve to the clearweb with it's built in session system.
+In this updated version, Mast can be used to serve to the clearweb with its built in session system.
+
+This repo contains the Gall version of mast; for the shrub version, check out the urbit shrub repo.
 
 ---
 
