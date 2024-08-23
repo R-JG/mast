@@ -1,74 +1,58 @@
-# `Mast`
+# %mast
 
-A library for building fully dynamic Sail front-ends
+Mast is a front-end model inspired by HTMX. It is also quite different from it. Mast takes the idea of applying minimal updates to the DOM with content rendered on the server, but instead of the developer writing swap logic, a diffing algorithm automatically creates the update and pushes it through an Eyre SSE channel to the Mast script on the browser which then executes the swaps. In addition to this, Mast's event attributes let you specify event listeners on elements such that the triggered events are poked into handlers in your ship, meaning that all of your client-side interface logic can be implemented in Hoon, within Urbit.
 
-*full-stack Urbit* — *zero JavaScript required* 
-
-## Overview
-
-- Using Mast, an app stores its current display state on an agent, and when the display state changes, updates to the browser containing only the necessary amount of html to achieve this state are sent and swapped in.
-
-- A small script that is generic to any application is inserted into your Sail and used to establish an Eyre channel, receive display updates from your ship, and sync the browser with them.
-
-- In your Sail components, you may add event attributes on elements specifying event listeners with paths corresponding to an event handler in your agent; the script will add these event listeners and poke your agent when the event is triggered. A return attribute may also be used to specify any data from the event object, the target element, or any other element associated by id to return to the ship for the event handler to process.
-
-- Display updates do not need to be in response to an event from the client, though. Your ship can stream updates to the browser as an effect of any state change in the agent.
+In this updated version, Mast can be used to serve to the clearweb with it's built in session system.
 
 ---
 
 ## Setup
 
-All that is needed to use Mast is the /lib/mast.hoon file.
+All that is needed to use Mast is /lib/mast/hoon and /lib/mast/js.
 
 ## Usage
 
-> Note: check out the /lib file and the example app for more detailed information.
+For an example of how mast is used check out this chess ui-agent: https://github.com/R-JG/chess/blob/mast-agent/src/backend/chess/app/chess-ui.hoon
 
-### In your agent 🤖
+### In your agent
 
-First, you will need to define your app's routes as `(list [path gate])` where the gates are your root-level Sail components, i.e. gates which produce `manx` containing a complete document with `<html>`, `<head>`, and `<body>` tags.
+Mast is an agent wrapper. To use mast, at the top of your agent's file below the type core include a `=+  (pin:mast your-session-state-type)` followed by `%-  agent:mast`. The argument for `pin:mast` is a mold of any client state that you might want saved on a session by session basis. This state will be accessible from `storage:mast` which is a `(map ship your-session-state-type)`. `storage:mast` is meant for UI related state, e.g. for conditional rendering; it will not persist through save-load cycles.
 
-> Note: you will also need to bind the base url segment for your app with arvo in order to access it from the client.
+(Side note: the mast agent wrapper now takes care of saving ui state, so you no longer need to track this in your agent.)
 
 #### ++ on-poke
 
-Mast uses a combination of direct http and the channel system. Pokes will be received under two marks: `%handle-http-request` for when the app is first accessed from the client, and `%json` for any subsequent client event pokes that the Mast script will send.
+Mast uses a combination of direct http and the channel system. Pokes will be received under two marks: `%handle-http-request` for when the app is first accessed from the client, and `%mast-event` for any subsequent client event pokes that the Mast script will send.
 
 ##### %handle-http-request
 
-For `%handle-http-request`, the main arms that you will use are `rig` and `plank`.
+In response to a `%handle-http-request` `%GET` poke, you will use `gale:mast` to send a full page to the client. Using this arm, mast will insert its script and establish an Eyre channel connection to receive diff updates. `gale:mast` is used with a `=^` to pin new cards and change `rig.mast`.
 
-The `rig` arm is used to produce a new instance of the display state, to then be used with `plank` and saved as the current display state in the agent.
+##### %mast-event
 
-The `plank` arm is used to serve any of the pages in your routes list according to the request url. It produces a list of cards with the http response.
+Events from the client are handled under the `%mast-event` mark. The `vase` will be of the type `event:mast` which is `[=path data=(map @t @t)]`. 
 
-##### %json
+The `path` is what you will have defined in the `event` attribute on the Sail element which triggered the event poke, and `data` contains any of the paths defined in the `return` attribute mapped to the value of the object's property in the DOM, or the name of an input from a submit event mapped to its value. Refer to the Sail attribute section below for more details.
 
-Events from the client are handled in on-poke under the `%json` mark.
-
-The json data can be parsed with the `parse-json` arm in Mast into `[tags=path data=(map @t @t)]`.
-
-> `tags` is the path that you had defined in the `event` attribute on the Sail element which triggered the event poke, and `data` contains any of the paths defined in the `return` attribute mapped to the value of the object's property in the DOM — refer to the Sail attribute section below.
-
-You can then `?+` over `tags` to define your event handlers.
+You can `?+` over the `path` to define your event handlers.
 
 #### Display updates with `gust`
 
-Display updates are made by using `rig` to produce a new instance of the display, which is then used with `gust` to produce a card to sync the client with the new display state.
+Display updates are made with `gust:mast`. This arm creates a diff from your newly rendered Sail to sync the client with the latest state of your UI. `gust:mast` is also used with a `=^` to pin new cards and change `rig.mast`.
 
 Typically, you would use these arms after updating some part of your app's state which is involved in your Sail components.
 
-This can be done in any part of your agent where you would produce a subscription update card (not only in on-poke) to send a display update to the client.
+This can be done asynchronously from mast events and sent from any part of your agent where you would produce a subscription card to update the client.
 
-### In your Sail ⛵
+### In your Sail
 
-There are three special element attributes that Mast uses: `event`, `return`, and `key`.
+Mast uses three main attributes: `event`, `return`, `key`, along with `debounce`, `throttle`, `js-on-event`, `js-on-add`, and `js-on-delete`.
 
 #### The event attribute
 
 The `event` attribute lets you specify event listeners on elements. In Mast, all that an event listener on the client does is poke your agent, leaving the entirety of the event handling to be done in your ship which is where your app's display state lives.
 
-Event attributes are formatted as a path where the first segment is the name of the event listener minus the "on" prefix, followed by any number of segments which, along with the first segment, identify the event handler in the agent (see the `%json` mark section).
+Event attributes are formatted as a path where the first segment is the name of the event listener minus the "on" prefix, followed by any number of segments which, along with the first segment, identify the event handler in the agent (see the `%mast-event` mark section).
 
 For example:
 
@@ -100,63 +84,14 @@ The `key` attribute is not necessary to use, but it is best practice when you ha
 
 A `key` is a globally unique value which identifies the element (two distinct elements in your Sail should never have the same key). Mast adds location based keys to your elements by default, but when you provide information about the identity of the element by specifying the `key`, it allows Mast to make more efficient display updates.
 
-### Tips and tricks 💡
+#### Other attributes
 
-#### Handling CSS
+The attributes `debounce` and `throttle` let you add debouncing and throttling to your events when added on an element with an `event` attribute. These attributes take a number for their duration in seconds.
 
-You should serve any CSS for your front-end in `%handle-http-request`, separate from your Sail components. Adding large amounts of CSS directly in your Sail will slow your app down. See the example agent for an example of how to serve CSS from the agent.
+The `js-on-event`, `js-on-add`, and `js-on-delete` events allow you to run arbitrary JavaScript when placed on an element that either has an `event` triggered on it, when the element is added to the DOM through a diff, or deleted through a diff.
 
 #### Implementing forms
 
-The way that forms are implemented in Mast is *not* through the traditional `<form>` element api. Instead, forms are implemented simply with Mast's `event` and `return` attributes.
-
-The general pattern would be to have one element with an event attribute, and a return attribute which links all form inputs by id. For example:
-
-```hoon
-;div
-  ;input#first-input;
-  ;input#second-input;
-  ;button
-    =event  "/click/submit-example-form"
-    =return  "/first-input/value /second-input/value"
-    ;+  ;/  "Submit"
-  ==
-==
-```
-
-> It is best not to use the semantic HTML associated with forms, nor the submit event.
-
-The input values can then be accessed from the parsed json data in your event handler.
-
-As a side note, one strategy for making the inputs on the client reset their values after submitting the form is to save some value in state, like a boolean, that you change in the form event handler. If you then concatenate this value with some other identifier in the key attribute of the input elements, the inputs will be reset upon a display update with gust.  
-
-#### Dynamic route segments
-
-In your list of routes, you can make a segment variable by using a buc: `/$`. When you do this, `rig` will always match with that segment. This means that you can define routes in your list such as: `/example/items/$` and if a url matches the first two segments and has one more segment of any value, it will match and select the route. Under `%handle-http-request` you can check for the value of this segment and apply any relevant state updates before rendering the display and sending it with `plank`.
-
-Another use case is that a custom 404 page can be supplied by adding a catch-all route with `$` after the base segment, e.g. `/my-app/$`, to the end of your route list (in the absence of this `rig` will send a default 404 page).
-
-#### Navigation
-
-Using `rig` and `gust`, you can navigate to a different route by sending a minimal set of updates instead of a whole page. This is done simply whenever you use `rig` with a different url relative to whatever is current.
-
-#### Dynamic event handlers
-
-An interesting issue can arise when you want to specify events on dynamically generated elements, because the corresponding handler in the agent is itself statically defined. Here are some ways to make your event handlers work with dynamic event listeners:
-
-- When handling event pokes from the client, if you switch over only select segments of the path, it is possible to have the other parts of the path be variable, which you can then use in your event handler to e.g. identify which element triggered the event when handling events for dynamically generated components.
-
-- An alternative to this is to encode certain information about the element in one of the attributes, and then use the return attribute to send that information back to the handler in the agent.
+There are two ways to implement forms in Mast. You can use both the typical `<form>` element API, or Mast's `event` and `return` attributes. To use a form element, add a "/submit/..." `event` attribute. The value of each input will be included in the data attribute of the `mast-event` poke, with the input's `name` attribute as the key.
 
 ---
-
-### Known issues, bugs, and limitations ⛭
-
-- Currently, Mast cannot be used to serve content to the clearweb.
-- Events which fire at a high frequency will not work well, e.g. mousemove or scroll. This will be partially addressed with debounce and throttle options.
-- There is a bug with table related semantic HTML elements where display updates for these elements won't work in certain cases. This can be avoided by just using divs and styling them in the manner of a table.
-- If a key attribute begins or ends with double quotes (actual quote characters in the beginning or end of the attribute tape, not the double quote syntax which defines a tape) the key will not work.
-- If an element has a child list that is over 1000, there will be problems.
-- Currently, you might encounter issues with any title or script element that you include in the head tag.
-
-If you find any other issues, let me know!

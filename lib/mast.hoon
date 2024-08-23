@@ -12,14 +12,15 @@
   +$  event  crow
   +$  rig  rig-0
   +$  rig-0
-    $:  =session-storage
+    $:  =storage
         =aft
     ==
-  +$  session-storage  (map ship session-state)
-  +$  aft  (map ship sail)
+  +$  storage  (map ship session-state)
+  +$  aft      (map ship sail)
   --
   ::
-  =|  =rig
+  =|  rig
+  =*  rig  -
   ^=  mast
   |%
   ::
@@ -73,18 +74,9 @@
     !>  ^-  json
     [%a (luff [i.t.c.old ~] [i.t.c.new ~])]
   ::
-  ++  get-session
-    |=  src=@p
-    (~(get by session-storage.rig) src)
-  ::
-  ++  put-session
-    |=  [src=@p =session-state]
-    (~(put by session-storage.rig) src session-state)
-  ::
   ++  agent
     |=  =agent:gall
     ^-  agent:gall
-    :: !.
     |_  =bowl:gall
     +*  this  .
         ag    ~(. agent bowl)
@@ -157,7 +149,7 @@
   ::
   --
 ::
-++  make-url-bind
+++  bind-url
   |=  [app=@tas url=path]
   ^-  card:agent:gall
   [%pass /bind %arvo %e %connect [~ url] app]
