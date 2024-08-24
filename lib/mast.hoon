@@ -12,11 +12,13 @@
   +$  event  crow
   +$  rig  rig-0
   +$  rig-0
-    $:  =storage
+    $:  =last-heard
+        =storage
         =aft
     ==
-  +$  storage  (map ship session-state)
-  +$  aft      (map ship sail)
+  +$  last-heard  (map ship @da)
+  +$  storage     (map ship session-state)
+  +$  aft         (map ship sail)
   --
   ::
   =|  rig
@@ -25,7 +27,7 @@
   |%
   ::
   ++  gale
-    |=  [our=@p app=@tas rid=@ta src=@p =sail]
+    |=  [bowl:gall rid=@ta =sail]
     ^-  (quip card:agent:gall ^rig)
     =/  new  (hoist sail)
     ?.  ?&  =(%html n.g.new)  ?=(^ c.new)
@@ -33,10 +35,13 @@
             =(%body n.g.i.t.c.new)
         ==
       !!
-    =.  aft.rig  (~(put by aft.rig) src new)
+    =.  aft  (~(put by aft) src new)
+    =?  last-heard  !=(src our)
+      (~(put by last-heard) src now)
+    =.  rig  (swab now)
     =/  =mart
       :~  [%our +:(scow %p our)]
-          [%app (trip app)]
+          [%app (trip dap)]
           [%sub (spud (make-sub-path src))]
       ==
     :_  rig
@@ -52,10 +57,10 @@
     ==
   ::
   ++  gust
-    |=  [src=@p =sail]
+    |=  [bowl:gall =sail]
     ^-  (quip card:agent:gall ^rig)
     =/  new  (hoist sail)
-    =/  old  (~(got by aft.rig) src)
+    =/  old  (~(got by aft) src)
     ?.  ?&  =(%html n.g.new)  ?=(^ c.new)
             =(%head n.g.i.c.new)  ?=(^ t.c.new)
             =(%body n.g.i.t.c.new)
@@ -64,7 +69,7 @@
             =(%body n.g.i.t.c.old)
         ==
       !!
-    =.  aft.rig  (~(put by aft.rig) src new)
+    =.  aft  (~(put by aft) src new)
     :_  rig
     :_  ~
     :^    %give
@@ -97,14 +102,17 @@
     ++  on-poke
       |=  [=mark =vase]
       ^-  (quip card:agent:gall agent:gall)
+      ?.  ?=(%json mark)
+        =^(cards agent (on-poke:ag [mark vase]) [cards this])
+      =+  !<(jon=json vase)
+      ?.  ?&  ?=(%a -.jon)  ?=(^ p.jon)
+              =([%s 'mast'] i.p.jon)  ?=(^ t.p.jon)
+          ==
+        =^(cards agent (on-poke:ag [mark vase]) [cards this])
+      =/  =crow  (parse-channel-data i.t.p.jon)
+      =?  last-heard  !=(src.bowl our.bowl)
+        (~(put by last-heard) src.bowl now.bowl)
       =^  cards  agent
-        ?.  ?=(%json mark)  (on-poke:ag [mark vase])
-        =+  !<(jon=json vase)
-        ?.  ?&  ?=(%a -.jon)  ?=(^ p.jon)
-                =([%s 'mast'] i.p.jon)  ?=(^ t.p.jon)
-            ==
-          (on-poke:ag [mark vase])
-        =/  =crow  (parse-channel-data i.t.p.jon)
         (on-poke:ag [%mast-event !>(crow)])
       [cards this]
     ::
@@ -146,6 +154,21 @@
       [cards this]
     ::
     --
+  ::
+  ++  swab
+    |=  now=@da
+    ^-  ^rig
+    =/  threshold  ~d1
+    =^  dead=(set @p)  last-heard
+      %-  %~  rep  by  last-heard
+      |=  [i=(pair @p @da) a=(pair (set @p) ^last-heard)]
+      ?:  (lth (sub now q.i) threshold)
+        %_(a q (~(put by q.a) i))
+      %_(a p (~(put in p.a) p.i))
+    %_  rig
+      storage  (malt (skip ~(tap by storage) |=([p=@p *] (~(has in dead) p))))
+      aft      (malt (skip ~(tap by aft) |=([p=@p *] (~(has in dead) p))))
+    ==
   ::
   --
 ::

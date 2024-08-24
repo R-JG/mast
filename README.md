@@ -1,8 +1,8 @@
 # %mast
 
-Mast is a front-end model inspired by HTMX. It is also quite different from it. Mast takes the idea of applying minimal updates to the DOM with content rendered on the server, but instead of the developer writing swap logic, a diffing algorithm automatically creates the update and pushes it through an Eyre SSE channel to the Mast script on the browser which then executes the swaps. In addition to this, Mast's event attributes let you specify event listeners on elements such that the triggered events are poked into handlers in your ship, meaning that all of your client-side interface logic can be implemented in Hoon, within Urbit.
+Mast is a front-end model inspired by HTMX. It is also quite different from it. Mast takes the idea of applying minimal updates to the DOM with content rendered on the server, but instead of the developer writing swap logic, a diffing algorithm automatically creates the update and pushes it through an Eyre SSE channel to the mast script on the browser which then executes the swaps. In addition to this, mast provides event attributes which let you specify event listeners on elements such that the triggered events are poked into handlers in your ship, meaning that all of your client-side interface logic can be implemented in Hoon, within Urbit.
 
-In this updated version, Mast can be used to serve to the clearweb with its built in session system.
+In this updated version, mast can be used to serve to the clearweb with its built in session system.
 
 This repo contains the Gall version of mast; for the shrub version, check out the urbit shrub repo.
 
@@ -20,7 +20,7 @@ For an example of how mast is used check out this chess ui-agent: https://github
 
 Mast is an agent wrapper. To use mast, at the top of your agent's file below the type core include a `=+  (pin:mast your-session-state-type)` followed by `%-  agent:mast`. The argument for `pin:mast` is a mold of any client state that you might want saved on a session by session basis. This state will be accessible from `storage:mast` which is a `(map ship your-session-state-type)`. `storage:mast` is meant for UI related state, e.g. for conditional rendering; it will not persist through save-load cycles.
 
-(Side note: the mast agent wrapper now takes care of saving ui state, so you no longer need to track this in your agent.)
+(Side note: the mast agent wrapper now takes care of saving manx state, so you no longer need to track this in your agent.)
 
 #### ++ on-poke
 
@@ -42,7 +42,7 @@ You can `?+` over the `path` to define your event handlers.
 
 Display updates are made with `gust:mast`. This arm creates a diff from your newly rendered Sail to sync the client with the latest state of your UI. `gust:mast` is also used with a `=^` to pin new cards and change `rig.mast`.
 
-Typically, you would use these arms after updating some part of your app's state which is involved in your Sail components.
+Typically, you would use these arms after updating some part of your app's state which is involved in rendering your Sail.
 
 This can be done asynchronously from mast events and sent from any part of your agent where you would produce a subscription card to update the client.
 
