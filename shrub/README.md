@@ -8,7 +8,7 @@
 
 To understand the %mast front-end model, imagine the client as a shrub within your ship, instead of an application on the browser. A mast shrub is the source of truth for the state of your front-end, and it should contain all client-side logic to transition this state. Your mast shrub will act as an interface that renders the state of some other shrub.
 
-Mast shrubs are spawned and managed by %mast (which is itself a shrub). %mast will handle everything related to connecting with and updating the browser. Your shrub needs to do only two things: have `manx` state, and take `ui-event` pokes. Your shrub will also have a `%src` dependency, which provides your back-end data.
+Mast shrubs are spawned and managed by %mast (which is itself a shrub). %mast will handle everything related to connecting with and updating the browser. Your shrub needs to do only two things: have `manx` state, and take `ui-event` pokes. Your shrub will also likely have a `%src` dependency, which provides your back-end data (though it's not necessary).
 
 Whenever you change the `manx` state of your shrub, %mast will automatically sync the browser with this state. All display updates happen like this; you never need to explicitly poke anything to %mast or interact with the browser.
 
