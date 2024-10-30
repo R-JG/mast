@@ -6,15 +6,13 @@
 
 ### Introduction
 
-To understand the %mast front-end model, imagine the client as a shrub within your ship, instead of an application on the browser. A mast shrub is the source of truth for the state of your front-end, and it should contain all client-side logic to transition this state. Your mast shrub will act as an interface that renders the state of some other shrub.
+To understand the %mast front-end model, imagine the client as a shrub within your ship, instead of an application on the browser. A mast shrub is the source of truth for the state of your front-end, and it should contain all client-side logic to transition this state. In most cases, your mast shrub will act as an interface that renders the state of some other shrub.
 
-Mast shrubs are spawned and managed by %mast (which is itself a shrub). %mast will handle everything related to connecting with and updating the browser. Your shrub needs to do only two things: have `manx` state, and take `ui-event` pokes. Your shrub will also likely have a `%src` dependency, which provides your back-end data (though it's not necessary).
+Mast shrubs are spawned and managed by %mast (which is itself a shrub). %mast will handle everything related to connecting with and updating the browser. It does this by sending a script along with your UI that communicates with %mast, applying its diffs and handling any events. Your shrub needs to do only two things: have `manx` state, and take `ui-event` pokes. Your shrub will also likely have a `%src` dependency, which provides your back-end data (though it's not necessary).
 
 Whenever you change the `manx` state of your shrub, %mast will automatically sync the browser with this state. All display updates happen like this; you never need to explicitly poke anything to %mast or interact with the browser.
 
 %mast will poke your shrub with a `ui-event`, which represents an event that happens on the browser, such as a click or a form submit. A ui-event is of the type `[=path data=(map @t @t)]`. The path is an identifier for the event that you will have written in an attribute in your Sail. When handling a ui-event poke, you can switch over this path to implement your event handler logic. The data map contains any data that you might return from the browser with the event.
-
-In addition to %mast attributes, there is also a %mast component element. This element lets you plug the interface of one shrub into the interface of another shrub.
 
 ---
 
@@ -24,7 +22,9 @@ In addition to %mast attributes, there is also a %mast component element. This e
 
 #### The event attribute
 
-The `event` attribute lets you add event listeners to elements. The value of the `event` attribute is a path where the first segment is the name of an event listener (minus the "on" prefix), followed by any number of segments. %mast will add the specified event listener to the element, and when the event is triggered your shrub will receive a `ui-event` poke.
+The `event` attribute lets you add event listeners to elements. The value of the `event` attribute is a path where the first segment is the name of an event, followed by any number of segments. %mast will add the specified event listener to the element, and when the event is triggered your shrub will receive a `ui-event` poke.
+
+- Refer to this page for a list of events: https://developer.mozilla.org/en-US/docs/Web/API/Element#events
 
 An element with an event attribute looks like this:
 
@@ -34,13 +34,21 @@ An element with an event attribute looks like this:
 
 - Note: you can add multiple event listeners on a single element by writing multiple paths separated by whitespace.
 
+If you are adding an event to a dynamically generated element (e.g. producing a list of elements with ++turn) where there might be multiple elements created with a singularly defined event attribute, a useful technique is to add a dynamic segment to the path containing some information identifying the element. For example:
+
+```hoon
+;div(event "/click/example-event/{some-id}");
+```
+
+When handling the click event in this example, you could pattern match the path like this: `[%click %example-event @ta ~]` and use the third segment to identify the element in your event handling logic.
+
 #### The return attribute
 
-The `return` attribute lets you to specify data to return from the event. This data will be contained in the data map of the `ui-event` poke. Using this attribute requires some knowledge of the DOM API. If you only need form data instead of general purpose data on an event, you can use the form API instead (see the section on implementing forms below).
+The `return` attribute lets you to specify data to return from the event. This data will be contained in the data map of the `ui-event` poke. Using this attribute requires some knowledge of the DOM API (i.e. element and event object properties: https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model). If you only need form data instead of general purpose data on an event, you can use the form element submit event (see the section on implementing forms below).
 
 The value of the `return` attribute is also written as a path. A number of paths may be written, separated by whitespace. The first segment of the path refers to the object on the client to return data from. There are three options:
 
-1) `"/target/..."` for the current target, i.e. the element on which the event was triggered,
+1) `"/target/..."` for the user’s current target, which is always the element on which this event was triggered. (e.g. the text input the user is focused on.),
 2) `"/event/..."` for the event object,
 3) `"/your-element-id/..."` for any other element by id.
 
@@ -60,9 +68,7 @@ For instance, you can add a click event attribute to a div, and return the x coo
 
 #### Implementing forms
 
-There are two ways to implement forms in %mast. You can either use a %mast `return` attribute to return the values of inputs on event, or you can use the typical `<form>` element API.
-
-To make use of the form API, just add a "/submit/..." `event` attribute on your form element to add a submit event listener. If you do this, your shrub will receive a `ui-event` poke on form submit, and the value of each input in the form will be included in the data map of the event poke with each input's `name` attribute as its key.
+There are two ways to implement forms in %mast. You can either use a %mast `return` attribute to return the values of inputs on event, or you can simply add a "/submit/..." `event` attribute on your form element, and the value of each input in the form will be included in the data map of the event poke with each input's `name` attribute as its key.
 
 For example, in your Sail you can implement a form like this:
 
@@ -78,6 +84,16 @@ For example, in your Sail you can implement a form like this:
 The `key` attribute is not necessary to use, but it is best practice when you have a list of elements that will change.
 
 A `key` is a globally unique value which identifies the element (two distinct elements in your Sail should never have the same key). %mast adds location based keys to your elements by default, but when you provide information about the identity of the element by specifying the `key`, it allows %mast to make more efficient display updates.
+
+Keys are most relevant in situations where you are dynamically generating elements, e.g.
+
+```hoon
+;div
+  ;*  %+  turn  my-list
+      |=  =some-data
+      ;div(key "{<id.some-data>}");
+==
+```
 
 #### Other attributes
 
